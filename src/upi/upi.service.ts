@@ -1,82 +1,82 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { CreateUpiDto, VerifyUtrDto } from './dto/create-upi.dto';
-import { UpdateUpiDto } from './dto/update-upi.dto';
+import { CreateUpiDto } from './dto/create-upi.dto';
+import { UpdateUpiDto, VerifyUtrDto } from './dto/update-upi.dto';
 
 @Injectable()
 export class UpiService {
-  async create(createUpiDto: CreateUpiDto) {
-    const { amount, businessUpiId, orderNumber } = createUpiDto;
+  async createClientUpi(createUpiDto: CreateUpiDto) {
+    const { amount, client_upi_id, order_id } = createUpiDto;
 
-    const check = await global.DB.UpiModel.findOne({
-      where: { orderNumber },
+    const check = await global.DB.Transaction.findOne({
+      where: { order_id },
     });
     if (check) {
-      throw new HttpException('Order number already exists', 401);
+      throw new HttpException('Order id already exists', 401);
     }
 
-    const busUpiId = await global.DB.UpiModel.create({
+    const busUpiId = await global.DB.Transaction.create({
       amount,
-      businessUpiId,
-      orderNumber,
+      client_upi_id,
+      order_id,
     });
     return {
       message: 'Created successfully',
       data: {
         id: busUpiId.id,
-        orderNumber: busUpiId.orderNumber,
+        orderNumber: busUpiId.order_id,
       },
     };
   }
 
-  async utrNumberUpdate(id: number, verifyUtrDto: VerifyUtrDto) {
-    const { utrNumber } = verifyUtrDto;
-    const verify = await global.DB.UpiModel.update(
-      {
-        utrNumber,
-      },
-      { where: { id } },
-    );
-    return {
-      message: 'Verify utr number successfully',
-      data: {
-        id: verify.id,
-        utrNumber: verify.utrNumber,
-      },
-    };
-  }
-
-  async findOne(orderNumber: string) {
-    const data = await global.DB.UpiModel.findOne({
+  async findOrderId(order_id: string) {
+    const data = await global.DB.Transaction.findOne({
       attributes: [
         'id',
         'amount',
-        'businessUpiId',
-        'userUpiId',
-        'orderNumber',
-        'utrNumber',
+        'client_upi_id',
+        'user_upi_id',
+        'order_id',
+        'utr',
         'status',
         'verifyTimestamp',
         'endAt',
       ],
-      where: { orderNumber },
+      where: { order_id },
     });
-    if (!data)
-      throw new HttpException('No data found with this orderNumber', 401);
+    if (!data) throw new HttpException('No data found with this order id', 401);
 
     return data;
   }
 
-  async update(id: number, updateUpiDto: UpdateUpiDto) {
-    const { userUpiId } = updateUpiDto;
-    const endAt = new Date(new Date().getTime() + 30 * 60000);
-    const update = await global.DB.UpiModel.update(
+  async updateUtr(id: number, verifyUtrDto: VerifyUtrDto) {
+    const { utr } = verifyUtrDto;
+
+    const update = await global.DB.Transaction.update(
       {
-        userUpiId,
+        utr,
+      },
+      { where: { id } },
+    );
+    if (!update[0]) {
+      throw new HttpException('No data found with this id', 401);
+    }
+    return {
+      statusCode: 201,
+      message: 'Utr updated successfully',
+    };
+  }
+
+  async updateUserUpi(id: number, updateUpiDto: UpdateUpiDto) {
+    const { user_upi_id } = updateUpiDto;
+    const endAt = new Date(new Date().getTime() + 30 * 60000);
+    const update = await global.DB.Transaction.update(
+      {
+        user_upi_id,
         endAt,
       },
       { where: { id } },
     );
-    const updatedUser = await global.DB.UpiModel.findOne({
+    const updatedUser = await global.DB.Transaction.findOne({
       where: { id },
     });
     return {

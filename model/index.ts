@@ -1,5 +1,6 @@
 import { Sequelize, DataTypes } from 'sequelize';
-import UpiModel from './unicode';
+import Transaction from './transaction';
+import Client from './client';
 
 const DATABASE = async () => {
   const sequelize = new Sequelize(
@@ -25,7 +26,8 @@ const DATABASE = async () => {
     );
     const db = {
       sequelize: sequelize,
-      UpiModel: UpiModel(sequelize, DataTypes),
+      Transaction: Transaction(sequelize, DataTypes),
+      Client: Client(sequelize, DataTypes),
     };
 
     //await sequelize.sync({ force: true });

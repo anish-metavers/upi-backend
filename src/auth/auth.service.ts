@@ -1,26 +1,51 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
-
+import { HttpException, Injectable } from '@nestjs/common';
+import { LoginDTO, SignupDTO } from './dto/create-auth.dto';
+import * as jwt from 'jsonwebtoken';
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  createJWT(id: number, email: string): string {
+    return jwt.sign({ id, email }, 'secret', { expiresIn: '1h' });
   }
 
-  findAll() {
-    return `This action returns all auth`;
-  }
+  // async signupAPIs(signupDto: SignupDTO) {
+  //   const email = signupDto.email;
+  //   const auth = await global.DB.Client.findOne({
+  //     where: { email },
+  //   });
+  //   if (auth) {
+  //     throw new HttpException('Client already exist', 401);
+  //   }
+  //   const user = await global.DB.Client.create({
+  //     ...signupDto,
+  //   });
+  //   return {
+  //     message: 'Signup successfully',
+  //     status: true,
+  //     data: {
+  //       id: user.id,
+  //       name: user.name,
+  //       email: user.email,
+  //     },
+  //   };
+  // }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+  async loginAPIs(loginDto: LoginDTO) {
+    const { email, password } = loginDto;
+    const check = await global.DB.Client.findOne({
+      where: { email },
+    });
+    if (password !== check?.password)
+      throw new HttpException('Invalid  password', 401);
+    const token = this.createJWT(check.id, check.email);
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+    return {
+      message: 'Login successfully',
+      status: true,
+      response: {
+        client_id: check.id,
+        email: check.email,
+        token,
+      },
+    };
   }
 }

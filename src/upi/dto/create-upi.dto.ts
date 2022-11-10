@@ -8,15 +8,10 @@ export class CreateUpiDto {
 
   @Length(10, 20)
   @IsNotEmpty()
-  businessUpiId: string;
+  client_upi_id: string;
 
   @Length(5, 10)
   @IsNotEmpty()
-  orderNumber: number;
+  order_id: number;
 }
 
-export class VerifyUtrDto extends CreateUpiDto {
-  @IsNotEmpty()
-  @Length(10, 20)
-  utrNumber: string;
-}

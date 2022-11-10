@@ -1,10 +1,14 @@
-import { IsNotEmpty, IsEmail, Length } from 'class-validator';
-export class CreateAuthDto {
+import { IsNotEmpty, IsEmail } from 'class-validator';
+export class LoginDTO {
   @IsNotEmpty()
   @IsEmail()
   email: string;
 
-  @Length(8, 16)
   @IsNotEmpty()
   password: string;
 }
+export class SignupDTO extends LoginDTO {
+  @IsNotEmpty()
+  name: string;
+}
+

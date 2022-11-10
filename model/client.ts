@@ -1,9 +1,9 @@
 import { Model, Sequelize } from 'sequelize';
 
-class UpiModel extends Model {}
+class Client extends Model {}
 
 const model = (sequelize: Sequelize, DataType: any) => {
-  UpiModel.init(
+  Client.init(
     {
       // Model attributes are defined here
       id: {
@@ -12,33 +12,16 @@ const model = (sequelize: Sequelize, DataType: any) => {
         autoIncrement: true,
         allowNull: false,
       },
-      amount: {
-        type: DataType.INTEGER,
-        allowNull: false,
-      },
-      businessUpiId: {
+      name: {
         type: DataType.STRING,
         allowNull: false,
       },
-      userUpiId: {
+      email: {
         type: DataType.STRING,
+        allowNull: false,
       },
-      orderNumber: {
-        type: DataType.INTEGER,
-        unique: true,
-      },
-      utrNumber: {
+      password: {
         type: DataType.STRING,
-      },
-      status: {
-        type: DataType.ENUM('OPEN', 'VERIFIED', 'COMPLETED', 'EXPIRED'),
-        defaultValue: 'OPEN',
-      },
-      verifyTimestamp: {
-        type: DataType.DATE,
-      },
-      endAt: {
-        type: DataType.DATE,
       },
       createdAt: {
         type: DataType.DATE,
@@ -54,11 +37,11 @@ const model = (sequelize: Sequelize, DataType: any) => {
     {
       timestamps: true,
       sequelize,
-      modelName: 'UpiModel',
-      tableName: 'upi_model',
+      modelName: 'Client',
+      tableName: 'clients',
     },
   );
-  return UpiModel;
+  return Client;
 };
 
 export default model;
