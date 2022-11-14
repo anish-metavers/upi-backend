@@ -7,8 +7,3 @@ export class LoginDTO {
   @IsNotEmpty()
   password: string;
 }
-export class SignupDTO extends LoginDTO {
-  @IsNotEmpty()
-  name: string;
-}
-
