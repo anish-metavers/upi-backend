@@ -23,6 +23,10 @@ const model = (sequelize: Sequelize, DataType: any) => {
       password: {
         type: DataType.STRING,
       },
+      status: {
+        type: DataType.ENUM('0', '1'),
+        defaultValue: '1',
+      },
       createdAt: {
         type: DataType.DATE,
         field: 'created_at',
