@@ -5,7 +5,7 @@ import { UpdateUpiDto, VerifyUtrDto } from './dto/update-upi.dto';
 @Injectable()
 export class UpiService {
   async createClientUpi(createUpiDto: CreateUpiDto) {
-    const { amount, client_upi_id, order_id } = createUpiDto;
+    const { amount, client_upi, order_id } = createUpiDto;
 
     const check = await global.DB.Transaction.findOne({
       where: { order_id },
@@ -16,7 +16,7 @@ export class UpiService {
 
     const busUpiId = await global.DB.Transaction.create({
       amount,
-      client_upi_id,
+      client_upi,
       order_id,
     });
     return {
@@ -35,13 +35,13 @@ export class UpiService {
       attributes: [
         'id',
         'amount',
-        'client_upi_id',
-        'user_upi_id',
+        'client_upi',
+        'user_upi',
         'order_id',
         'utr',
         'status',
-        'verifyTimestamp',
-        'endAt',
+        'verify_timestamp',
+        'end_at',
         'note',
       ],
       where: { order_id },
@@ -52,12 +52,12 @@ export class UpiService {
   }
 
   async updateUserUpi(id: number, updateUpiDto: UpdateUpiDto) {
-    const { user_upi_id } = updateUpiDto;
-    const endAt = new Date(new Date().getTime() + 30 * 60000);
+    const { user_upi } = updateUpiDto;
+    const end_at = new Date(new Date().getTime() + 30 * 60000);
     const update = await global.DB.Transaction.update(
       {
-        user_upi_id,
-        endAt,
+        user_upi,
+        end_at,
       },
       { where: { id } },
     );
@@ -72,24 +72,24 @@ export class UpiService {
 
   async transactionListUpi(id: number) {
     //const id = req['client_id'];
-    const user = await global.DB.Transaction.findOne({
+    const transactions = await global.DB.Transaction.findOne({
       attributes: [
         'id',
         'client_id',
         'order_id',
         'amount',
-        'client_upi_id',
-        'user_upi_id',
+        'client_upi',
+        'user_upi',
         'note',
         'utr',
-        'verifyTimestamp',
-        'endAt',
+        'verify_timestamp',
+        'end_at',
         'status',
       ],
       where: { id },
     });
-    if (!user) throw new HttpException('Invalid client id', 400);
-    return user;
+    if (!transactions) throw new HttpException('Invalid client id', 400);
+    return transactions;
   }
 
   async updateUtr(id: number, verifyUtrDto: VerifyUtrDto) {

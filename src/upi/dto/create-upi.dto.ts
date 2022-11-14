@@ -8,7 +8,7 @@ export class CreateUpiDto {
 
   @Length(10, 20)
   @IsNotEmpty()
-  client_upi_id: string;
+  client_upi: string;
 
   @Length(5, 10)
   @IsNotEmpty()
