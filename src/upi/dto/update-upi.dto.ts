@@ -5,11 +5,11 @@ import { Length, IsNotEmpty } from 'class-validator';
 export class UpdateUpiDto extends PartialType(CreateUpiDto) {
   @Length(10, 20)
   @IsNotEmpty()
-  user_upi_id: string;
+  user_upi: string;
 }
 
-export class VerifyUtrDto{
-  @IsNotEmpty()
+export class VerifyUtrDto {
   @Length(10, 20)
+  @IsNotEmpty()
   utr: string;
 }

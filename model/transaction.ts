@@ -14,32 +14,40 @@ const model = (sequelize: Sequelize, DataType: any) => {
       },
       client_id: {
         type: DataType.INTEGER,
+        allowNull: false,
+      },
+      client_upi_id: {
+        type: DataType.INTEGER,
       },
       order_id: {
         type: DataType.INTEGER,
+        allowNull: false,
       },
       amount: {
         type: DataType.INTEGER,
         allowNull: false,
       },
-      client_upi_id: {
+      client_upi: {
         type: DataType.STRING,
       },
-      user_upi_id: {
+      user_upi: {
         type: DataType.STRING,
       },
       note: {
         type: DataType.INTEGER,
-        unique: true,
+        allowNull: true,
       },
       utr: {
         type: DataType.STRING,
+        allowNull: false,
       },
-      verifyTimestamp: {
+      verify_timestamp: {
         type: DataType.DATE,
+        allowNull: true,
       },
-      endAt: {
+      end_at: {
         type: DataType.DATE,
+        allowNull: true,
       },
       status: {
         type: DataType.ENUM('OPEN', 'VERIFIED', 'COMPLETED', 'EXPIRED'),
