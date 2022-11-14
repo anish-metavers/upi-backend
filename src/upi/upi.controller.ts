@@ -48,10 +48,9 @@ export class UpiController {
   }
 
   @UseGuards(AuthGuard)
-  @Get('transaction-list/:id')
-  async transactionListUpi(@Req() req: Request, @Param('id') id: number) {
+  @Get('transaction-list')
+  async transactionListUpi(@Req() req: Request) {
     const result = req['client_id'];
-    console.log(result.id);
     //const created_date = req['created_date'];
     return {
       statusCode: 200,
