@@ -13,7 +13,6 @@ import { CreateUpiDto } from './dto/create-upi.dto';
 import { UpdateUpiDto, VerifyUtrDto } from './dto/update-upi.dto';
 import { Request } from 'express';
 import { AuthGuard } from 'guard/authGuard';
-import * as jwt from 'jsonwebtoken';
 @Controller('upi')
 export class UpiController {
   constructor(private readonly upiService: UpiService) {}
@@ -33,7 +32,7 @@ export class UpiController {
   }
 
   //Update userUpiId APIs
-  @Put('user_upi_id/:id')
+  @Put('user_upi/:id')
   async updateUserUpi(
     @Param('id') id: string,
     @Body() updateUpiDto: UpdateUpiDto,
@@ -47,20 +46,20 @@ export class UpiController {
     };
   }
 
-  @UseGuards(AuthGuard)
-  @Get('transaction-list')
-  async transactionListUpi(@Req() req: Request) {
-    const result = req['client_id'];
-    //const created_date = req['created_date'];
-    return {
-      statusCode: 200,
-      response: {
-        user: req.headers.user,
-        data: await this.upiService.transactionListUpi(result),
-      },
-      success: true,
-    };
-  }
+  // @UseGuards(AuthGuard)
+  // @Get('transaction-list/:id')
+  // async transactionListUpi(@Req() req: Request, @Param('id') id: number) {
+  //   const result = req['client_id'];
+
+  //   return {
+  //     statusCode: 200,
+  //     response: {
+  //       user: req.headers.user,
+  //       data: await this.upiService.transactionListUpi(result),
+  //     },
+  //     success: true,
+  //   };
+  // }
 
   //Get all user history by order number APIs
   @Get(':order_id')

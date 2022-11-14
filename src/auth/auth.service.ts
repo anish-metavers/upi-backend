@@ -9,19 +9,21 @@ export class AuthService {
 
   async loginAPIs(loginDto: LoginDTO) {
     const { email, password } = loginDto;
-    const check = await global.DB.Client.findOne({
+    const checkClient = await global.DB.Client.findOne({
       where: { email },
     });
-    if (password !== check?.password)
-      throw new HttpException('Invalid  password', 401);
-    const token = this.createJWT(check.id, check.email);
+
+    if (!checkClient || password !== checkClient.password)
+      throw new HttpException('User Not Exist or Invalid Password', 401);
+
+    const token = this.createJWT(checkClient.id, checkClient.email);
 
     return {
       message: 'Login successfully',
       status: true,
       response: {
-        client_id: check.id,
-        email: check.email,
+        client_id: checkClient.id,
+        email: checkClient.email,
         token,
       },
     };
