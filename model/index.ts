@@ -2,6 +2,7 @@ import { Sequelize, DataTypes } from 'sequelize';
 import Transaction from './transaction';
 import Client from './client';
 import ClientUpi from './clientUpi';
+import ClientApi from './clientApi';
 
 const DATABASE = async () => {
   const sequelize = new Sequelize(
@@ -30,9 +31,10 @@ const DATABASE = async () => {
       Transaction: Transaction(sequelize, DataTypes),
       Client: Client(sequelize, DataTypes),
       ClientUpi: ClientUpi(sequelize, DataTypes),
+      ClientApi: ClientApi(sequelize, DataTypes),
     };
 
-    //await sequelize.sync({ force: true });
+    // await sequelize.sync({ alter: true });
 
     global.DB = db;
   } catch (error) {

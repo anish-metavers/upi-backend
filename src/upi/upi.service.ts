@@ -70,6 +70,25 @@ export class UpiService {
     };
   }
 
+  async updateUtr(id: number, verifyUtrDto: VerifyUtrDto) {
+    const { utr } = verifyUtrDto;
+
+    const update = await global.DB.Transaction.update(
+      {
+        utr,
+      },
+      { where: { id } },
+    );
+    if (!update[0]) {
+      throw new HttpException('No data found with this id', 401);
+    }
+    return {
+      statusCode: 201,
+      success: true,
+      message: 'Utr updated successfully',
+    };
+  }
+
   async transactionListUpi(id: number) {
     //const id = req['client_id'];
     const transactions = await global.DB.Transaction.findOne({
@@ -92,22 +111,5 @@ export class UpiService {
     return transactions;
   }
 
-  async updateUtr(id: number, verifyUtrDto: VerifyUtrDto) {
-    const { utr } = verifyUtrDto;
-
-    const update = await global.DB.Transaction.update(
-      {
-        utr,
-      },
-      { where: { id } },
-    );
-    if (!update[0]) {
-      throw new HttpException('No data found with this id', 401);
-    }
-    return {
-      statusCode: 201,
-      success: true,
-      message: 'Utr updated successfully',
-    };
-  }
+  
 }

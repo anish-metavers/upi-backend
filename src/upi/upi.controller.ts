@@ -62,16 +62,16 @@ export class UpiController {
   // }
 
   //Get all user history by order number APIs
-  @Get(':order_id')
-  async findOrderById(@Param('order_id') order_id: string) {
-    const data = await this.upiService.findOrderId(order_id);
-    return {
-      message: 'Get all information',
-      statusCode: 201,
-      response: {
-        data,
-      },
-      success: 'true',
-    };
-  }
+  // @Get(':order_id')
+  // async findOrderById(@Param('order_id') order_id: string) {
+  //   const data = await this.upiService.findOrderId(order_id);
+  //   return {
+  //     message: 'Get all information',
+  //     statusCode: 201,
+  //     response: {
+  //       data,
+  //     },
+  //     success: 'true',
+  //   };
+  // }
 }
