@@ -29,22 +29,27 @@ const model = (sequelize: Sequelize, DataType: any) => {
       },
       client_upi: {
         type: DataType.STRING,
+        allowNull: true,
       },
       user_upi: {
         type: DataType.STRING,
+        allowNull: true,
       },
       note: {
         type: DataType.STRING,
+        allowNull: true,
       },
       utr: {
         type: DataType.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       verify_timestamp: {
         type: DataType.DATE,
+        allowNull: true,
       },
       end_at: {
         type: DataType.DATE,
+        allowNull: true,
       },
       status: {
         type: DataType.ENUM('OPEN', 'VERIFIED', 'COMPLETED', 'EXPIRED'),
