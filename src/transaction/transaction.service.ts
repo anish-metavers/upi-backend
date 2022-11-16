@@ -1,4 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
+// import { Sequelize } from 'sequelize';
 import { ThirdPartyService } from 'src/third-party/third-party.service';
 import { UpdateUpiDto, VerifyUtrDto } from './dto/update-upi.dto';
 
@@ -20,6 +21,7 @@ export class TransactionService {
         'verify_timestamp',
         'end_at',
         'status',
+        //[Sequelize.fn('Count', Sequelize.col('client_id')), 'TransactionID']
       ],
       where: { client_id },
     });

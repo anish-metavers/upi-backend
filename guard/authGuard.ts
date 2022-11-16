@@ -24,7 +24,9 @@ export class AuthGuard implements CanActivate {
       throw new HttpException('Invalid authorization headers token!', 401);
     }
     const { id } = decoded;
-    if (!id) throw new HttpException('No user found with this user', 401);
+    const client = await global.DB.Client.findOne({ where: { id } })
+    console.log(client, id)
+    if (!(id && client)) throw new HttpException('No user found with this Token', 401);
     req['client_id'] = id;
     const userRoles = await global.DB.Client.findAll({
       where: { id },

@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { UpiModule } from './upi/upi.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { TransactionModule } from './transaction/transaction.module';
+import { ClientModule } from './client/client.module';
 
 @Module({
-  imports: [UpiModule, ConfigModule.forRoot(), AuthModule, TransactionModule],
+  imports: [ConfigModule.forRoot(), AuthModule, TransactionModule, ClientModule],
 })
 export class AppModule {}

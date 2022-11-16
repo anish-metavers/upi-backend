@@ -3,13 +3,13 @@ import { CreateUpiDto } from './create-upi.dto';
 import { Length, IsNotEmpty } from 'class-validator';
 
 export class UpdateUpiDto extends PartialType(CreateUpiDto) {
-  @Length(10, 20)
+  @Length(10, 40)
   @IsNotEmpty()
   user_upi: string;
 }
 
 export class VerifyUtrDto {
-  @Length(10, 20)
+  @Length(6, 12)
   @IsNotEmpty()
   utr: string;
 }
