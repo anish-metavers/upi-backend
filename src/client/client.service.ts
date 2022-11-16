@@ -29,7 +29,6 @@ export class ClientService {
     updateClientDto: UpdateClientDto,
   ) {
     const client_id = req['client_id'];
-    //console.log(id);
     const updateClient = await global.DB.ClientUpi.update(
       {
         ...updateClientDto,

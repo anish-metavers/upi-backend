@@ -20,7 +20,10 @@ export class ClientController {
   constructor(private readonly clientService: ClientService) {}
 
   @Post('/upi/create')
-  async create(@Req() req: Request, @Body() createClientDto: CreateClientDto) {
+  async createClientUpi(
+    @Req() req: Request,
+    @Body() createClientDto: CreateClientDto,
+  ) {
     const client = await this.clientService.createClientUpi(
       req,
       createClientDto,
@@ -29,7 +32,7 @@ export class ClientController {
   }
 
   @Put('/upi/update/:id')
-  async update(
+  async updateClientUpiStatus(
     @Req() req: Request,
     @Param('id') id: number,
     @Body() updateClientDto: UpdateClientDto,
