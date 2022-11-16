@@ -4,7 +4,6 @@ import {
   Get,
   Param,
   Patch,
-  Put,
   Query,
   Req,
   UseGuards,
@@ -75,7 +74,6 @@ export class TransactionController {
     return {
       statusCode: 201,
       response: { data },
-
       success: true,
     };
   }

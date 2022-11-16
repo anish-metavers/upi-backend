@@ -34,7 +34,7 @@ const DATABASE = async () => {
       ClientApi: ClientApi(sequelize, DataTypes),
     };
 
-    // await sequelize.sync({ alter: true });
+    //await sequelize.sync({ force: true });
 
     global.DB = db;
   } catch (error) {

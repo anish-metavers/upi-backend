@@ -4,7 +4,7 @@ import * as jwt from 'jsonwebtoken';
 @Injectable()
 export class AuthService {
   createJWT(id: number, email: string): string {
-    return jwt.sign({ id, email }, 'secret', { expiresIn: '1h' });
+    return jwt.sign({ id, email }, 'secret', { expiresIn: '24h' });
   }
 
   async loginAPIs(loginDto: LoginDTO) {

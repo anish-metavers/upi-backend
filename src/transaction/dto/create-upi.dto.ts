@@ -6,12 +6,11 @@ export class CreateUpiDto {
   @IsNotEmpty()
   amount: number;
 
-  @Length(10, 20)
+  @Length(10, 40)
   @IsNotEmpty()
   client_upi: string;
 
-  @Length(5, 10)
+  @Length(4, 8)
   @IsNotEmpty()
   order_id: number;
 }
-
