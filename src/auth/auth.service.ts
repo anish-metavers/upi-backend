@@ -20,7 +20,7 @@ export class AuthService {
 
     return {
       message: 'Login successfully',
-      status: true,
+      success: true,
       response: {
         client_id: checkClient.id,
         email: checkClient.email,

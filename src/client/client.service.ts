@@ -14,11 +14,13 @@ export class ClientService {
     });
     return {
       message: 'Created successfully',
-      status: true,
+      success: true,
       response: {
-        id: clientUpi.id,
-        client_id: clientUpi.client_id,
-        upi: clientUpi.upi,
+        newUpi: {
+          id: clientUpi.id,
+          client_id: clientUpi.client_id,
+          upi: clientUpi.upi,
+        },
       },
     };
   }
@@ -56,8 +58,8 @@ export class ClientService {
     );
     return {
       message: 'Get all client information',
-      status: true,
-      response: list,
+      success: true,
+      response: { list },
     };
   }
 }

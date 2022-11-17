@@ -18,6 +18,7 @@ const model = (sequelize: Sequelize, DataType: any) => {
       },
       upi: {
         type: DataType.STRING,
+        unique: true,
         allowNull: false,
       },
       status: {
