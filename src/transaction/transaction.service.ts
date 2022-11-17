@@ -2,7 +2,11 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { Op } from 'sequelize';
 // import { Sequelize } from 'sequelize';
 import { ThirdPartyService } from 'src/third-party/third-party.service';
-import { UpdateUpiDto, VerifyUtrDto } from './dto/update-upi.dto';
+import {
+  UpdateStatusDto,
+  UpdateUpiDto,
+  VerifyUtrDto,
+} from './dto/update-upi.dto';
 
 @Injectable()
 export class TransactionService {
@@ -131,12 +135,61 @@ export class TransactionService {
 
     await transaction.update({
       utr,
-      status: 'SUBMITTED',
+      status: 'PROCESSING',
     });
+
+    const ApiRes = await this.thirdPartyService.callApiForClient({
+      apiReq: {
+        query: { order_id: transaction.order_id },
+        body: { status: 'PROCESSING' },
+      },
+      apiType: 'UPDATE_TRANSACTION',
+      client_id: transaction.client_id,
+    });
+
+    if (!ApiRes.response.success)
+      throw new HttpException('Client API Error', 400);
+
     return {
       statusCode: 201,
       success: true,
       message: 'Utr updated successfully',
     };
+  }
+
+  async updateTrxnStatus(
+    id: number,
+    client_id: string | number,
+    updateStatusDto: UpdateStatusDto,
+  ) {
+    const { status } = updateStatusDto;
+
+    const transaction = await global.DB.Transaction.findOne({ where: { id } });
+
+    if (!transaction) throw new HttpException('Transaction Not Found', 404);
+
+    if (status != 'PROCESSING' && status != 'COMPLETED' && status != 'FAILED')
+      throw new HttpException('Invalid Status Value!!', 400);
+
+    if (status == 'PROCESSING' && transaction.status != 'OPEN')
+      throw new HttpException('Transaction Status is Not OPEN!!', 400);
+
+    if (
+      (status == 'COMPLETED' || status == 'FAILED') &&
+      transaction.status != 'PROCESSING'
+    )
+      throw new HttpException('Transaction Status is Not PROCESSING!!', 400);
+
+    await transaction.update({ status });
+
+    const ApiRes = await this.thirdPartyService.callApiForClient({
+      apiReq: { query: { order_id: transaction.order_id }, body: { status } },
+      apiType: 'UPDATE_TRANSACTION',
+      client_id,
+    });
+    if (!ApiRes.response.success)
+      throw new HttpException('Client API Error', 400);
+
+    return transaction;
   }
 }
