@@ -14,7 +14,7 @@ export class ThirdPartyService {
 
     // Fetch Client from Domain
     const client = await this.getClientFromDomain(client_id);
-    console.log(client);
+    // console.log(client);
 
     if (client.isError) return { isError: true, message: 'No Client Found!!' };
 
@@ -31,7 +31,7 @@ export class ThirdPartyService {
 
     // Fetch Client API Info by Client Id and Api Type
     const clientApi = await this.getApiInfo(client.data.id, apiType);
-    console.log(clientApi);
+    // console.log(clientApi);
 
     if (clientApi.isError)
       return {
@@ -50,7 +50,7 @@ export class ThirdPartyService {
       apiReq,
       headers,
     });
-    console.log(ApiRes);
+    // console.log(ApiRes);
 
     // Authentication Error
     let clientApiInvalidErrors = ['E-0045', 'E-0043'];
