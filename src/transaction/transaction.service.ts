@@ -1,4 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { Op } from 'sequelize';
 // import { Sequelize } from 'sequelize';
 import { ThirdPartyService } from 'src/third-party/third-party.service';
 import { UpdateUpiDto, VerifyUtrDto } from './dto/update-upi.dto';
@@ -54,42 +55,43 @@ export class TransactionService {
         client_id,
       });
 
-      console.log(ApiRes);
-
       //   if (!ApiRes || !ApiRes.response || !ApiRes.response.isError )
       //     throw new HttpException('Something Went Wrong on Client Side!!', 401);
       const data = ApiRes.response.response;
       if (data.status != 'OPEN')
         throw new HttpException('This Transaction Status is not OPEN!', 401);
 
-      try {
-        await global.DB.Transaction.create({
-          client_id,
-          order_id,
-          amount: data.amount,
-          note: data.note,
-          status: data.status,
-        });
+      const clientUpi = await global.DB.ClientUpi.findAll({
+        where: { status: '1' },
+      });
 
-        return await global.DB.Transaction.findOne({
-          attributes: [
-            'id',
-            'amount',
-            'client_upi',
-            'user_upi',
-            'order_id',
-            'utr',
-            'status',
-            'verify_timestamp',
-            'end_at',
-            'note',
-          ],
-          where: { order_id, client_id },
-        });
-      } catch (error) {
-        console.log(error);
-        return error;
-      }
+      const randIndex = Math.floor(Math.random() * clientUpi.length);
+
+      await global.DB.Transaction.create({
+        client_upi: clientUpi[randIndex].upi,
+        client_upi_id: clientUpi[randIndex].id,
+        client_id,
+        order_id,
+        amount: data.amount,
+        note: data.note,
+        status: data.status,
+      });
+
+      return await global.DB.Transaction.findOne({
+        attributes: [
+          'id',
+          'amount',
+          'client_upi',
+          'user_upi',
+          'order_id',
+          'utr',
+          'status',
+          'verify_timestamp',
+          'end_at',
+          'note',
+        ],
+        where: { order_id, client_id },
+      });
     }
 
     return data;
@@ -97,35 +99,40 @@ export class TransactionService {
 
   async updateUserUpi(id: number, updateUpiDto: UpdateUpiDto) {
     const { user_upi } = updateUpiDto;
+
+    const transaction = await global.DB.Transaction.findOne({ where: { id } });
+
+    if (!transaction) throw new HttpException('Transaction Not Found', 404);
+
+    if (transaction.status != 'OPEN')
+      throw new HttpException('This Transaction is already Submitted!!', 400);
+
     const end_at = new Date(new Date().getTime() + 30 * 60000);
-    const update = await global.DB.Transaction.update(
-      {
-        user_upi,
-        end_at,
-      },
-      { where: { id } },
-    );
-    const updatedUser = await global.DB.Transaction.findOne({
-      where: { id },
+
+    await transaction.update({
+      user_upi,
+      end_at,
     });
+
     return {
       message: 'Updated successfully',
-      data: updatedUser,
+      data: transaction,
     };
   }
 
   async updateUtr(id: number, verifyUtrDto: VerifyUtrDto) {
     const { utr } = verifyUtrDto;
+    const transaction = await global.DB.Transaction.findOne({ where: { id } });
 
-    const update = await global.DB.Transaction.update(
-      {
-        utr,
-      },
-      { where: { id } },
-    );
-    if (!update[0]) {
-      throw new HttpException('No data found with this id', 401);
-    }
+    if (!transaction) throw new HttpException('Transaction Not Found', 404);
+
+    if (transaction.status != 'OPEN')
+      throw new HttpException('This Transaction is already Submitted!!', 400);
+
+    await transaction.update({
+      utr,
+      status: 'SUBMITTED',
+    });
     return {
       statusCode: 201,
       success: true,
