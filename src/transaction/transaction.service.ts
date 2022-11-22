@@ -54,7 +54,7 @@ export class TransactionService {
         client_id,
       });
 
-      console.log(ApiRes);
+      //console.log(ApiRes);
 
       //   if (!ApiRes || !ApiRes.response || !ApiRes.response.isError )
       //     throw new HttpException('Something Went Wrong on Client Side!!', 401);

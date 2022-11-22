@@ -41,7 +41,7 @@ const model = (sequelize: Sequelize, DataType: any) => {
       timestamps: true,
       sequelize,
       modelName: 'ClientUpi',
-      tableName: 'client_upis',
+      tableName: 'client_upi',
     },
   );
   return ClientUpi;
