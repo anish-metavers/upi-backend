@@ -61,7 +61,8 @@ export class TransactionService {
 
       //   if (!ApiRes || !ApiRes.response || !ApiRes.response.isError )
       //     throw new HttpException('Something Went Wrong on Client Side!!', 401);
-      const data = ApiRes.response.response;
+      const data = ApiRes.response.response.transaction;
+
       if (data.status != 'OPEN')
         throw new HttpException('This Transaction Status is not OPEN!', 401);
 
