@@ -52,7 +52,7 @@ const model = (sequelize: Sequelize, DataType: any) => {
         allowNull: true,
       },
       status: {
-        type: DataType.ENUM('OPEN', 'VERIFIED', 'COMPLETED', 'EXPIRED'),
+        type: DataType.ENUM('OPEN', 'PROCESSING', 'FAILED', 'COMPLETED'),
         defaultValue: 'OPEN',
       },
       createdAt: {

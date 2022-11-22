@@ -17,7 +17,7 @@ const model = (sequelize: any, DataTypes: any) => {
         allowNull: false,
       },
       api_type: {
-        type: DataTypes.ENUM('GET_TRANSACTION', 'POST_TRANSACTION'),
+        type: DataTypes.ENUM('GET_TRANSACTION', 'UPDATE_TRANSACTION'),
         allowNull: false,
       },
       api_method: {
