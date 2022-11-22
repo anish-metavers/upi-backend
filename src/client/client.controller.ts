@@ -7,6 +7,7 @@ import {
   Req,
   Param,
   Get,
+  Patch,
 } from '@nestjs/common';
 import { AuthGuard } from 'guard/authGuard';
 import { ClientService } from './client.service';
@@ -31,7 +32,7 @@ export class ClientController {
     return client;
   }
 
-  @Put('/upi/update/:id')
+  @Patch('/upi/update/:id')
   async updateClientUpiStatus(
     @Req() req: Request,
     @Param('id') id: number,

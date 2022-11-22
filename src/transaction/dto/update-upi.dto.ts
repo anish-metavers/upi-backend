@@ -7,6 +7,10 @@ export class UpdateUpiDto extends PartialType(CreateUpiDto) {
   @IsNotEmpty()
   user_upi: string;
 }
+export class UpdateStatusDto {
+  @IsNotEmpty()
+  status: string;
+}
 
 export class VerifyUtrDto {
   @Length(6, 12)

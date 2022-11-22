@@ -10,7 +10,11 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthGuard } from 'guard/authGuard';
-import { UpdateUpiDto, VerifyUtrDto } from './dto/update-upi.dto';
+import {
+  UpdateStatusDto,
+  UpdateUpiDto,
+  VerifyUtrDto,
+} from './dto/update-upi.dto';
 import { TransactionService } from './transaction.service';
 
 @Controller('transaction')
@@ -70,6 +74,26 @@ export class TransactionController {
     const data = await this.transactionService.updateUserUpi(
       +trxn_id,
       updateUpiDto,
+    );
+    return {
+      statusCode: 201,
+      response: { data },
+      success: true,
+    };
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('status/:trxn_id')
+  async updateStatus(
+    @Param('trxn_id') trxn_id: string,
+    @Body() updateStatusDto: UpdateStatusDto,
+    @Req() req: Request,
+  ) {
+    const client_id = req['client_id'];
+    const data = await this.transactionService.updateTrxnStatus(
+      +trxn_id,
+      client_id,
+      updateStatusDto,
     );
     return {
       statusCode: 201,
