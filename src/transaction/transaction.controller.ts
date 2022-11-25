@@ -39,7 +39,6 @@ export class TransactionController {
   }
   @Get('init/:order_id')
   async initTransaction(
-    @Req() req: Request,
     @Param('order_id') order_id: string,
     @Query() query: any,
   ) {
