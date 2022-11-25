@@ -37,7 +37,6 @@ export class TransactionController {
       success: true,
     };
   }
-
   @Get('init/:order_id')
   async initTransaction(
     @Param('order_id') order_id: string,
