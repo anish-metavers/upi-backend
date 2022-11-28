@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthGuard } from 'guard/authGuard';
+import { TransactionListFilterDto } from './dto/create-upi.dto';
 import {
   UpdateStatusDto,
   UpdateUpiDto,
@@ -23,7 +24,10 @@ export class TransactionController {
 
   @UseGuards(AuthGuard)
   @Get('list')
-  async getTransactionList(@Req() req: Request, @Query() query: any) {
+  async getTransactionList(
+    @Req() req: Request,
+    @Query() transactionListQuery: TransactionListFilterDto,
+  ) {
     const client_id = req['client_id'];
     return {
       statusCode: 200,
@@ -31,12 +35,13 @@ export class TransactionController {
         user: req.headers.user,
         data: await this.transactionService.getTransactionList(
           client_id,
-          query,
+          transactionListQuery,
         ),
       },
       success: true,
     };
   }
+
   @Get('init/:order_id')
   async initTransaction(
     @Param('order_id') order_id: string,
