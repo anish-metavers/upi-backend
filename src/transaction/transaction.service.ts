@@ -183,7 +183,6 @@ export class TransactionService {
     )
       throw new HttpException('Transaction Status is Not PROCESSING!!', 400);
 
-
     const ApiRes = await this.thirdPartyService.callApiForClient({
       apiReq: { query: { order_id: transaction.order_id }, body: { status } },
       apiType: 'UPDATE_TRANSACTION',
@@ -192,7 +191,7 @@ export class TransactionService {
     if (!ApiRes.response.success)
       throw new HttpException('Client API Error', 400);
     else await transaction.update({ status });
-      
+
     return transaction;
   }
 }
