@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Op } from 'sequelize';
-// import { Sequelize } from 'sequelize';
 import { ThirdPartyService } from 'src/third-party/third-party.service';
+import { TransactionListFilterDto } from './dto/create-upi.dto';
 import {
   UpdateStatusDto,
   UpdateUpiDto,
@@ -12,7 +12,33 @@ import {
 export class TransactionService {
   constructor(private readonly thirdPartyService: ThirdPartyService) {}
 
-  async getTransactionList(client_id: number, query: any) {
+  async getTransactionList(
+    client_id: number,
+    transactionListQuery: TransactionListFilterDto,
+  ) {
+    const {
+      utr,
+      client_upi_id,
+      user_upi,
+      order_id,
+      amount,
+      status,
+      verify_timestamp,
+      note,
+    } = transactionListQuery;
+
+    let filterObject: any = {
+      client_id,
+    };
+
+    if (utr) filterObject.utr = { [Op.like]: `%${utr}%` };
+    if (user_upi) filterObject.user_upi = { [Op.like]: `%${user_upi}%` };
+    if (note) filterObject.note = { [Op.like]: `%${note}%` };
+    if (status) filterObject.status = status;
+    if (client_upi_id) filterObject.client_upi_id = client_upi_id;
+    if (order_id) filterObject.order_id = order_id;
+    if (amount) filterObject.amount = amount;
+
     const transactions = await global.DB.Transaction.findAll({
       attributes: [
         'id',
@@ -26,9 +52,8 @@ export class TransactionService {
         'verify_timestamp',
         'end_at',
         'status',
-        //[Sequelize.fn('Count', Sequelize.col('client_id')), 'TransactionID']
       ],
-      where: { client_id },
+      where: filterObject,
     });
     if (!transactions) throw new HttpException('Invalid client id', 400);
     return transactions;
@@ -183,7 +208,6 @@ export class TransactionService {
     )
       throw new HttpException('Transaction Status is Not PROCESSING!!', 400);
 
-
     const ApiRes = await this.thirdPartyService.callApiForClient({
       apiReq: { query: { order_id: transaction.order_id }, body: { status } },
       apiType: 'UPDATE_TRANSACTION',
@@ -192,7 +216,7 @@ export class TransactionService {
     if (!ApiRes.response.success)
       throw new HttpException('Client API Error', 400);
     else await transaction.update({ status });
-      
+
     return transaction;
   }
 }
