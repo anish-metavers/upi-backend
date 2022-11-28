@@ -1,9 +1,9 @@
 import { Model, Sequelize, DataTypes } from 'sequelize';
 
-class ClientUpi extends Model {}
+class UserRole extends Model {}
 
 const model = (sequelize: Sequelize) => {
-  ClientUpi.init(
+  UserRole.init(
     {
       // Model attributes are defined here
       id: {
@@ -12,19 +12,14 @@ const model = (sequelize: Sequelize) => {
         autoIncrement: true,
         allowNull: false,
       },
-      client_id: {
+      user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      upi: {
-        type: DataTypes.STRING,
-        unique: true,
+      role_id: {
+        type: DataTypes.INTEGER,
+        defaultValue: 2,
         allowNull: false,
-      },
-      status: {
-        type: DataTypes.ENUM('0', '1'),
-        allowNull: false,
-        defaultValue: '1',
       },
       createdAt: {
         type: DataTypes.DATE,
@@ -40,11 +35,11 @@ const model = (sequelize: Sequelize) => {
     {
       timestamps: true,
       sequelize,
-      modelName: 'ClientUpi',
-      tableName: 'client_upis',
+      modelName: 'UserRole',
+      tableName: 'user_roles',
     },
   );
-  return ClientUpi;
+  return UserRole;
 };
 
 export default model;

@@ -3,6 +3,10 @@ import Transaction from './transaction';
 import Client from './client';
 import ClientUpi from './clientUpi';
 import ClientApi from './clientApi';
+import Role from './role';
+import Permission from './permission';
+import RolePermission from './rolePermission';
+import UserRole from './userRoles';
 
 const DATABASE = async () => {
   const sequelize = new Sequelize(
@@ -28,10 +32,14 @@ const DATABASE = async () => {
     );
     const db = {
       sequelize: sequelize,
-      Transaction: Transaction(sequelize, DataTypes),
-      Client: Client(sequelize, DataTypes),
-      ClientUpi: ClientUpi(sequelize, DataTypes),
-      ClientApi: ClientApi(sequelize, DataTypes),
+      Transaction: Transaction(sequelize),
+      Client: Client(sequelize),
+      ClientUpi: ClientUpi(sequelize),
+      ClientApi: ClientApi(sequelize),
+      Role: Role(sequelize),
+      Permission: Permission(sequelize),
+      RolePermission: RolePermission(sequelize),
+      UserRole: UserRole(sequelize),
     };
 
     //await sequelize.sync({ force: true });

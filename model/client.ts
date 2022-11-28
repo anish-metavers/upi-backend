@@ -1,39 +1,39 @@
-import { Model, Sequelize } from 'sequelize';
+import { Model, Sequelize, DataTypes } from 'sequelize';
 
 class Client extends Model {}
 
-const model = (sequelize: Sequelize, DataType: any) => {
+const model = (sequelize: Sequelize) => {
   Client.init(
     {
       // Model attributes are defined here
       id: {
-        type: DataType.INTEGER,
+        type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
         allowNull: false,
       },
       name: {
-        type: DataType.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
       },
       email: {
-        type: DataType.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
       },
       password: {
-        type: DataType.STRING,
+        type: DataTypes.STRING,
       },
       status: {
-        type: DataType.ENUM('0', '1'),
+        type: DataTypes.ENUM('0', '1'),
         defaultValue: '1',
       },
       createdAt: {
-        type: DataType.DATE,
+        type: DataTypes.DATE,
         field: 'created_at',
         defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
       },
       updatedAt: {
-        type: DataType.DATE,
+        type: DataTypes.DATE,
         field: 'updated_at',
         defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
       },
