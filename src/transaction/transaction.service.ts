@@ -69,7 +69,7 @@ export class TransactionService {
         throw new HttpException('This Transaction Status is not OPEN!', 401);
 
       const clientUpi = await global.DB.ClientUpi.findAll({
-        where: { status: '1' },
+        where: { client_id, status: '1' },
       });
 
       const randIndex = Math.floor(Math.random() * clientUpi.length);
@@ -183,7 +183,6 @@ export class TransactionService {
     )
       throw new HttpException('Transaction Status is Not PROCESSING!!', 400);
 
-
     const ApiRes = await this.thirdPartyService.callApiForClient({
       apiReq: { query: { order_id: transaction.order_id }, body: { status } },
       apiType: 'UPDATE_TRANSACTION',
@@ -192,7 +191,7 @@ export class TransactionService {
     if (!ApiRes.response.success)
       throw new HttpException('Client API Error', 400);
     else await transaction.update({ status });
-      
+
     return transaction;
   }
 }
