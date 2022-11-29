@@ -15,27 +15,35 @@ export class CreateUpiDto {
   order_id: number;
 }
 export class TransactionListFilterDto {
-  //@IsString()
   utr: string;
 
-  //@IsInt()
   client_upi_id: number;
 
-  //@IsString()
   user_upi: string;
 
-  //@IsInt()
   order_id: number;
 
-  //@IsInt()
-  amount: number;
-
-  //@IsString()
   status: string;
 
-  //@IsString()
-  verify_timestamp: string;
-
-  //@IsString()
   note: string;
+
+  amount_start: number;
+
+  amount_end: number;
+
+  created_at_start: string;
+
+  created_at_end: string;
+
+  updated_at_start: string;
+
+  updated_at_end: string;
+
+  verify_timestamp_start: string;
+
+  verify_timestamp_end: string;
+
+  page_no: number;
+
+  page_size: number;
 }
