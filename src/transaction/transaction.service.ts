@@ -21,9 +21,15 @@ export class TransactionService {
       client_upi_id,
       user_upi,
       order_id,
-      amount,
+      amount_end,
+      amount_start,
       status,
-      verify_timestamp,
+      verify_timestamp_end,
+      verify_timestamp_start,
+      created_at_start,
+      created_at_end,
+      updated_at_end,
+      updated_at_start,
       note,
     } = transactionListQuery;
 
@@ -37,7 +43,23 @@ export class TransactionService {
     if (status) filterObject.status = status;
     if (client_upi_id) filterObject.client_upi_id = client_upi_id;
     if (order_id) filterObject.order_id = order_id;
-    if (amount) filterObject.amount = amount;
+    if (amount_start && amount_end)
+      filterObject.amount = { [Op.between]: [amount_start, amount_end] };
+    if (created_at_end && created_at_start)
+      filterObject.created_at = {
+        [Op.between]: [new Date(created_at_start), new Date(created_at_end)],
+      };
+    if (updated_at_end && updated_at_start)
+      filterObject.updated_at = {
+        [Op.between]: [new Date(updated_at_start), new Date(updated_at_end)],
+      };
+    if (verify_timestamp_end && verify_timestamp_start)
+      filterObject.verify_timestamp = {
+        [Op.between]: [
+          new Date(verify_timestamp_start),
+          new Date(verify_timestamp_end),
+        ],
+      };
 
     const transactions = await global.DB.Transaction.findAll({
       attributes: [
@@ -52,8 +74,11 @@ export class TransactionService {
         'verify_timestamp',
         'end_at',
         'status',
+        'created_at',
+        'updated_at',
       ],
       where: filterObject,
+      //logging: true
     });
     if (!transactions) throw new HttpException('Invalid client id', 400);
     return transactions;
