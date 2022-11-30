@@ -17,20 +17,20 @@ export class AuthGuard implements CanActivate {
       throw new HttpException('No authorization headers token found', 401);
     }
     try {
-      decoded = jwt.verify(token, 'secret');
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (error) {
       if (error.name === 'TokenExpiredError')
         throw new HttpException('Token expired !', 401);
       throw new HttpException('Invalid authorization headers token!', 401);
     }
     const { id } = decoded;
-    const client = await global.DB.Client.findOne({ where: { id } })
-    //console.log(client, id)
-    if (!(id && client)) throw new HttpException('No user found with this Token', 401);
-    req['client_id'] = id;
-    const userRoles = await global.DB.Client.findAll({
-      where: { id },
-    });
+    const user = await global.DB.User.findOne({ where: { id } });
+
+    if (!user) throw new HttpException('No user found with this Token', 401);
+
+    req['user_id'] = user.id;
+    req['client_id'] = user.client_id;
+    req['isMaster'] = !user.client_id ? true : false;
 
     return true;
   }

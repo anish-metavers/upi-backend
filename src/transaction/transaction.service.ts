@@ -3,6 +3,7 @@ import { Op } from 'sequelize';
 import { ThirdPartyService } from 'src/third-party/third-party.service';
 import { TransactionListFilterDto } from './dto/create-upi.dto';
 import {
+  InitTransactionDTO,
   UpdateStatusDto,
   UpdateUpiDto,
   VerifyUtrDto,
@@ -33,9 +34,7 @@ export class TransactionService {
       note,
     } = transactionListQuery;
 
-    let filterObject: any = {
-      client_id,
-    };
+    let filterObject: any = { ...(client_id ? { client_id } : {}) };
 
     if (utr) filterObject.utr = { [Op.like]: `%${utr}%` };
     if (user_upi) filterObject.user_upi = { [Op.like]: `%${user_upi}%` };
@@ -84,7 +83,7 @@ export class TransactionService {
     return transactions;
   }
 
-  async initTransaction(order_id: string, query: any) {
+  async initTransaction(order_id: string, query: InitTransactionDTO) {
     const { client_id } = query;
     const data = await global.DB.Transaction.findOne({
       attributes: [
@@ -216,6 +215,12 @@ export class TransactionService {
     updateStatusDto: UpdateStatusDto,
   ) {
     const { status } = updateStatusDto;
+
+    if (!client_id)
+      throw new HttpException(
+        { message: 'Master Admin can not change Transaction Status!!' },
+        404,
+      );
 
     const transaction = await global.DB.Transaction.findOne({ where: { id } });
 

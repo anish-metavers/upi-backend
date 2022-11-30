@@ -20,9 +20,6 @@ const model = (sequelize: Sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      password: {
-        type: DataTypes.STRING,
-      },
       status: {
         type: DataTypes.ENUM('0', '1'),
         defaultValue: '1',

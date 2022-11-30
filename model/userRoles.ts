@@ -1,6 +1,14 @@
 import { Model, Sequelize, DataTypes } from 'sequelize';
 
-class UserRole extends Model {}
+class UserRole extends Model {
+  static associate(models: any) {
+    this.belongsTo(models.Role, {
+      as: 'role_data',
+      foreignKey: 'role_id',
+      targetKey: 'id',
+    });
+  }
+}
 
 const model = (sequelize: Sequelize) => {
   UserRole.init(

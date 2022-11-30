@@ -10,6 +10,7 @@ import {
 class Role extends Model<InferAttributes<Role>, InferCreationAttributes<Role>> {
   declare id: number;
   declare name: string;
+  declare priority: number;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 }
@@ -26,6 +27,10 @@ const model = (sequelize: Sequelize) => {
       },
       name: {
         type: DataTypes.STRING,
+        allowNull: false,
+      },
+      priority: {
+        type: DataTypes.INTEGER,
         allowNull: false,
       },
       createdAt: {

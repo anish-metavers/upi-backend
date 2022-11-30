@@ -7,6 +7,7 @@ import Role from './role';
 import Permission from './permission';
 import RolePermission from './rolePermission';
 import UserRole from './userRoles';
+import User from './user';
 
 const DATABASE = async () => {
   const sequelize = new Sequelize(
@@ -40,9 +41,17 @@ const DATABASE = async () => {
       Permission: Permission(sequelize),
       RolePermission: RolePermission(sequelize),
       UserRole: UserRole(sequelize),
+      User: User(sequelize),
     };
 
-    //await sequelize.sync({ force: true });
+    // Setting the association of model
+    Object.keys(db).forEach((modelName) => {
+      if (db[modelName].associate) {
+        db[modelName].associate(db);
+      }
+    });
+
+    // await sequelize.sync({ alter: true });
 
     global.DB = db;
   } catch (error) {
