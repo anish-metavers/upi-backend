@@ -1,8 +1,8 @@
-import { Model } from 'sequelize';
+import { Model, DataTypes } from 'sequelize';
 
 class ClientApi extends Model {}
 
-const model = (sequelize: any, DataTypes: any) => {
+const model = (sequelize: any) => {
   ClientApi.init(
     {
       // Model attributes are defined here

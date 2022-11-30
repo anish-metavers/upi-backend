@@ -17,3 +17,8 @@ export class VerifyUtrDto {
   @IsNotEmpty()
   utr: string;
 }
+
+export class InitTransactionDTO {
+  @IsNotEmpty()
+  client_id: string | number;
+}

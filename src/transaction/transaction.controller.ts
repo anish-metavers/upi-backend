@@ -12,6 +12,7 @@ import { Request } from 'express';
 import { AuthGuard } from 'guard/authGuard';
 import { TransactionListFilterDto } from './dto/create-upi.dto';
 import {
+  InitTransactionDTO,
   UpdateStatusDto,
   UpdateUpiDto,
   VerifyUtrDto,
@@ -32,7 +33,6 @@ export class TransactionController {
     return {
       statusCode: 200,
       response: {
-        user: req.headers.user,
         data: await this.transactionService.getTransactionList(
           client_id,
           transactionListQuery,
@@ -42,10 +42,31 @@ export class TransactionController {
     };
   }
 
+  @UseGuards(AuthGuard)
+  @Patch('status/:trxn_id')
+  async updateStatus(
+    @Param('trxn_id') trxn_id: string,
+    @Body() updateStatusDto: UpdateStatusDto,
+    @Req() req: Request,
+  ) {
+    const client_id = req['client_id'];
+    const data = await this.transactionService.updateTrxnStatus(
+      +trxn_id,
+      client_id,
+      updateStatusDto,
+    );
+    return {
+      statusCode: 201,
+      response: { data },
+      success: true,
+    };
+  }
+
+
   @Get('init/:order_id')
   async initTransaction(
     @Param('order_id') order_id: string,
-    @Query() query: any,
+    @Query() query: InitTransactionDTO,
   ) {
     const data = await this.transactionService.initTransaction(order_id, query);
     return {
@@ -56,7 +77,7 @@ export class TransactionController {
     };
   }
 
-  //Utr number update APIs
+  //Update UTR Number
   @Patch('/utr/:trxn_id')
   async updateUtr(
     @Param('trxn_id') trxn_id: string,
@@ -78,26 +99,6 @@ export class TransactionController {
     const data = await this.transactionService.updateUserUpi(
       +trxn_id,
       updateUpiDto,
-    );
-    return {
-      statusCode: 201,
-      response: { data },
-      success: true,
-    };
-  }
-
-  @UseGuards(AuthGuard)
-  @Patch('status/:trxn_id')
-  async updateStatus(
-    @Param('trxn_id') trxn_id: string,
-    @Body() updateStatusDto: UpdateStatusDto,
-    @Req() req: Request,
-  ) {
-    const client_id = req['client_id'];
-    const data = await this.transactionService.updateTrxnStatus(
-      +trxn_id,
-      client_id,
-      updateStatusDto,
     );
     return {
       statusCode: 201,

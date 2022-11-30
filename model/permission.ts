@@ -1,30 +1,27 @@
 import { Model, Sequelize, DataTypes } from 'sequelize';
 
-class ClientUpi extends Model {}
-
+export class Permission extends Model {}
 const model = (sequelize: Sequelize) => {
-  ClientUpi.init(
+  Permission.init(
     {
       // Model attributes are defined here
       id: {
         type: DataTypes.INTEGER,
+        allowNull: false,
         primaryKey: true,
         autoIncrement: true,
-        allowNull: false,
       },
-      client_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      upi: {
+      name: {
         type: DataTypes.STRING,
-        unique: true,
         allowNull: false,
       },
-      status: {
-        type: DataTypes.ENUM('0', '1'),
+      path: {
+        type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: '1',
+      },
+      method: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
       createdAt: {
         type: DataTypes.DATE,
@@ -40,11 +37,11 @@ const model = (sequelize: Sequelize) => {
     {
       timestamps: true,
       sequelize,
-      modelName: 'ClientUpi',
-      tableName: 'client_upis',
+      modelName: 'Permission',
+      tableName: 'permissions',
     },
   );
-  return ClientUpi;
+  return Permission;
 };
 
 export default model;
