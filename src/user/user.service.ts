@@ -30,12 +30,12 @@ export class UserService {
       CLIENT_ID = client_id;
     }
 
+    if (roles.length <= 0)
+      throw new HttpException({ message: 'Roles are Invalid' }, 400);
+
     const checkUser = await global.DB.User.findOne({ where: { email } });
     if (checkUser)
       throw new HttpException({ message: 'User already exists' }, 400);
-
-    if (roles.length <= 0)
-      throw new HttpException({ message: 'Roles are Invalid' }, 400);
 
     // Validate Roles
     const checkRoles = await global.DB.Role.findAll({
@@ -79,7 +79,14 @@ export class UserService {
     });
     const rolesCreated = await global.DB.UserRole.bulkCreate(rolesData);
 
-    return { message: 'User Created Successfully', data: user, rolesCreated };
+    return {
+      success: true,
+      message: 'User Created Successfully',
+      response: {
+        data: user.toJSON(),
+        roles: rolesCreated.map((item: any) => item.toJSON()),
+      },
+    };
   }
 
   async findAll(req: Request) {
@@ -111,8 +118,11 @@ export class UserService {
     }
 
     return {
+      success: true,
       message: 'User List Fetched Successfully',
-      data: usersData,
+      response: {
+        data: usersData,
+      },
     };
   }
 
@@ -141,7 +151,11 @@ export class UserService {
     const userData = user.toJSON();
     userData.roles = tempRoles;
 
-    return { message: 'User Fetched Successfully', data: userData };
+    return {
+      success: true,
+      message: 'User Fetched Successfully',
+      response: { data: userData },
+    };
   }
 
   async updateRole(
@@ -153,6 +167,9 @@ export class UserService {
     const guard_user_id = req['user_id'];
 
     // Validate Roles
+    if (roles.length <= 0)
+      throw new HttpException({ message: 'Roles are Invalid: Empty!!' }, 400);
+
     const checkRoles = await global.DB.Role.findAll({
       where: { id: { [Op.in]: roles } },
     });
@@ -173,15 +190,63 @@ export class UserService {
       for (let guard_role of guardUserRoles) {
         if (guard_role.role_data.priority <= role.priority)
           throw new HttpException(
-            { message: 'You can not create user above your Role!!' },
+            { message: 'You can not add Role above your own Role!!' },
             400,
           );
       }
     }
+
+    const user = await global.DB.User.findOne({ where: { id: user_id } });
+    if (!user)
+      throw new HttpException(
+        { message: 'No User Found with the Given Id!!' },
+        404,
+      );
+
+    const userRoles = await global.DB.UserRole.findAll({ where: { user_id } });
+    const userRolesArr = userRoles.map((item: any) => item.role_id);
+
+    const rolesToAdd = [];
+
+    for (let role of roles) {
+      if (!userRolesArr.includes(role)) rolesToAdd.push(role);
+    }
+
+    if (rolesToAdd.length <= 0)
+      return { message: 'Roles Already Exists on User!!' };
+    const data = rolesToAdd.map((item) => {
+      return { user_id, role_id: item };
+    });
+    console.log('Data:', data);
+    const rolesAdded = await global.DB.UserRole.bulkCreate(data);
+
+    return { success: true, message: 'User Role updated Successfully!!' };
   }
 
-  removeRole(id: number) {
-    return `This action removes a #${id} user`;
+  async removeRole(
+    req: Request,
+    user_id: number,
+    updateUserDto: UpdateUserDto,
+  ) {
+    const { roles } = updateUserDto;
+
+    if (roles.length <= 0)
+      throw new HttpException({ message: 'Roles are Invalid: Empty!!' }, 400);
+
+    const user = await global.DB.User.findOne({ where: { id: user_id } });
+    if (!user)
+      throw new HttpException(
+        { message: 'No User Found with the Given Id!!' },
+        404,
+      );
+
+    // const userRoles = await global.DB.UserRole.findAll({ where: { user_id } });
+
+    await global.DB.UserRole.destroy({
+      where: { user_id, role_id: { [Op.in]: roles } },
+    });
+
+    return { success: true, message: 'Roles Deleted Successfully!!' };
   }
 
   async updateUpi(

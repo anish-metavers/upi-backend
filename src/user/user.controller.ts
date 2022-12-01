@@ -40,7 +40,7 @@ export class UserController {
   //   return await this.userService.findOne(req, +id);
   // }
 
-  @Patch('role/:user_id')
+  @Post('role/:user_id')
   async updateRole(
     @Req() req: Request,
     @Param('user_id') user_id: string,
@@ -50,8 +50,12 @@ export class UserController {
   }
 
   @Delete('role/:user_id')
-  removeRole(@Param('id') id: string) {
-    return this.userService.removeRole(+id);
+  removeRole(
+    @Req() req: Request,
+    @Param('user_id') user_id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.userService.removeRole(req, +user_id, updateUserDto);
   }
 
   // ANISH

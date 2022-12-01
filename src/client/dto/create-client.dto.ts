@@ -1,6 +1,15 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsEmail, IsNotEmpty } from 'class-validator';
+
+export class CreateClientUpiDto {
+  @IsNotEmpty()
+  upi: string;
+}
 
 export class CreateClientDto {
   @IsNotEmpty()
-  upi: string;
+  name: string;
+
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
 }
