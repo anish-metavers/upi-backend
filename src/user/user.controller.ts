@@ -55,13 +55,13 @@ export class UserController {
   }
 
   // ANISH
-  @Patch('upi/:user_id')
+  @Post('upi/:user_id')
   async updateUpi(
     @Req() req: Request,
     @Param('user_id') user_id: string,
-    query: UpdateUserUpiDto,
+    @Body() body: UpdateUserUpiDto,
   ) {
-    return await this.userService.updateUpi(req, +user_id, query);
+    return await this.userService.updateUpi(req, +user_id, body);
   }
 
   // ANISH
@@ -69,8 +69,8 @@ export class UserController {
   async removeUpi(
     @Req() req: Request,
     @Param('user_id') user_id: string,
-    query: UpdateUserUpiDto,
+    @Body() body: UpdateUserUpiDto,
   ) {
-    return await this.userService.removeUpi(req, +user_id, query);
+    return await this.userService.removeUpi(req, +user_id, body);
   }
 }

@@ -5,7 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { Op } from 'sequelize';
 import Role from 'model/role';
 import { Request } from 'express';
-
+import { User } from 'model/user';
 @Injectable()
 export class UserService {
   async create(req: Request, createUserDto: CreateUserDto) {
@@ -190,7 +190,39 @@ export class UserService {
     updateUserUpiDto: UpdateUserUpiDto,
   ) {
     const { upis } = updateUserUpiDto;
-    return {};
+
+    const find_userUpi = await global.DB.ClientUpi.findAll({
+      where: { id: { [Op.in]: upis } },
+    });
+    if (!find_userUpi || find_userUpi.length != upis.length) {
+      throw new HttpException('Client UPI Id is not Valid!!', 401);
+    }
+
+    const client_upi_permission = await global.DB.UserUpi.findAll({
+      where: { user_id },
+      attributes: ['id', 'user_id', 'client_upi_id'],
+    });
+
+    let exist_upi = client_upi_permission;
+    let upisToAdd = [...upis];
+    for (let i = 0; i < exist_upi.length; i++) {
+      for (let j = 0; j < upis.length; j++) {
+        if (exist_upi[i].client_upi_id == upis[j]) {
+          upisToAdd.splice(upisToAdd.indexOf(upis[j]), 1);
+        }
+      }
+    }
+    //console.log(upisToAdd,);
+    for (let i = 0; i < upisToAdd.length; i++) {
+      const user = await global.DB.UserUpi.create({
+        user_id: user_id,
+        client_upi_id: upisToAdd[i],
+      });
+    }
+    return {
+      message: 'Upis added successfully',
+      success: true,
+    };
   }
 
   async removeUpi(
@@ -199,6 +231,39 @@ export class UserService {
     updateUserUpiDto: UpdateUserUpiDto,
   ) {
     const { upis } = updateUserUpiDto;
-    return {};
+    const find_clientUpi = await global.DB.ClientUpi.findAll({
+      where: { id: { [Op.in]: upis } },
+    });
+
+    if (find_clientUpi.length < upis.length) {
+      throw new HttpException('Client UPI id is out of range ', 401);
+    }
+    const find_userUpi = await global.DB.UserUpi.findAll({
+      where: { user_id },
+      attributes: ['id', 'user_id', 'client_upi_id'],
+    });
+
+    let exist = find_userUpi;
+    let upisToDelete = [...upis];
+
+    for (let i = 0; i < find_userUpi.length; i++) {
+      for (let j = 0; j < upis.length; j++) {
+        if (exist[i].client_upi_id == upis[j]) {
+          upisToDelete.splice(upisToDelete.indexOf(upis[j]), 1);
+        }
+      }
+    }
+
+    for (let i = 0; i < upisToDelete.length; i++) {
+      const upis_delete = await global.DB.UserUpi.delete({
+        user_id: user_id,
+        client_upi_id: upisToDelete[i],
+      });
+    }
+
+    return {
+      message: 'Successfully',
+      success: true,
+    };
   }
 }
