@@ -1,0 +1,193 @@
+1. Create User API,
+
+Url: '/user/'
+Method: 'POST'
+Headers: {Authorization : 'Bearer Token'}
+Query: {}
+Body: {
+    "firstName": "User 1",
+    "lastName": "",
+    "email": "user1@mail.com",
+    "password": "1234@Meta",
+    "roles": [4,5],
+    "client_id": 1
+}
+Response: {
+    "message": "User Created Successfully",
+    "data": {
+        "createdAt": {
+            "val": "CURRENT_TIMESTAMP"
+        },
+        "updatedAt": {
+            "val": "CURRENT_TIMESTAMP"
+        },
+        "status": "ACTIVE",
+        "id": 5,
+        "first_name": "User 4",
+        "last_name": "",
+        "email": "user4@mail.com",
+        "password": "1234@Meta",
+        "client_id": 1
+    },
+    "roles": [
+        {
+            "createdAt": {
+                "val": "CURRENT_TIMESTAMP"
+            },
+            "updatedAt": {
+                "val": "CURRENT_TIMESTAMP"
+            },
+            "id": 8,
+            "user_id": 5,
+            "role_id": 4
+        },
+        {
+            "createdAt": {
+                "val": "CURRENT_TIMESTAMP"
+            },
+            "updatedAt": {
+                "val": "CURRENT_TIMESTAMP"
+            },
+            "id": 9,
+            "user_id": 5,
+            "role_id": 5
+        }
+    ]
+}
+
+
+2. Get All Roles API
+
+Url: '/role/'
+Method: 'GET'
+Query: {}
+Body: {}
+Response: {
+    "message": "Roles List Fetched Successfully!!",
+    "data": [
+        {
+            "id": 1,
+            "name": "Master Admin"
+        },
+        {
+            "id": 2,
+            "name": "Admin"
+        },
+        {
+            "id": 3,
+            "name": "Manager"
+        },
+        {
+            "id": 4,
+            "name": "Upi Manager"
+        },
+        {
+            "id": 5,
+            "name": "Transaction  Manager"
+        }
+    ]
+}
+
+3. Get All Clients API
+
+Url: '/client/'
+Method: 'GET'
+Query: {}
+Body: {}
+Response: {
+    "success": true,
+    "message": "Client List Fetched Successfully!!"
+    "response": {
+        "data": [
+            {
+                "id": 1,
+                "name": "Sid",
+                "email": "sid@mail.com",
+                "status": "1"
+            },
+            {
+                "id": 2,
+                "name": "Client 1",
+                "email": "client1@mail.com",
+                "status": "1"
+            }
+        ]
+    }
+}
+
+4. Get All Users API
+
+Url: '/user/'
+Method: 'GET'
+Query: {}
+Body: {}
+Response: {
+    "success": true,
+    "message": "User List Fetched Successfully",
+    "response": {
+        "data": [
+            {
+                "id": 1,
+                "client_id": 0,
+                "first_name": "Master",
+                "last_name": "Admin",
+                "user_name": null,
+                "email": "admin@mail.com",
+                "mobile_number": null,
+                "status": "ACTIVE",
+                "roles": [
+                    {
+                        "id": 1,
+                        "name": "Master Admin",
+                        "priority": 5000
+                    }
+                ]
+            },
+            {
+                "id": 2,
+                "client_id": 1,
+                "first_name": "User 1",
+                "last_name": "",
+                "user_name": null,
+                "email": "user1@mail.com",
+                "mobile_number": null,
+                "status": "ACTIVE",
+                "roles": [
+                    {
+                        "id": 2,
+                        "name": "Admin",
+                        "priority": 4000
+                    }
+                ]
+            },
+        ]
+    }
+}
+
+5. Update User Roles
+
+Url: '/user/role/:user_id'
+Method: 'PATCH'
+Query: {}
+Headers: {Authorization : 'Bearer Token'}
+Body: {
+    "roles": [2]
+}
+Response: {
+    "success": true,
+    "message": "User Role updated Successfully!!"
+}
+
+6. Remove User Roles
+
+Url: '/user/role/:user_id'
+Method: 'DELETE'
+Query: {}
+Headers: {Authorization : 'Bearer Token'}
+Body: {
+    "roles": [2]
+}
+Response: {
+    "success": true,
+    "message": "Roles Deleted Successfully!!"
+}

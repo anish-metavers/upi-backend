@@ -11,8 +11,8 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from 'guard/authGuard';
 import { ClientService } from './client.service';
-import { CreateClientDto } from './dto/create-client.dto';
-import { UpdateClientDto } from './dto/update-client.dto';
+import { CreateClientDto, CreateClientUpiDto } from './dto/create-client.dto';
+import { UpdateClientDto, UpdateClientUpiDto } from './dto/update-client.dto';
 import { Request } from 'express';
 
 @Controller('client')
@@ -20,10 +20,28 @@ import { Request } from 'express';
 export class ClientController {
   constructor(private readonly clientService: ClientService) {}
 
+  @Get()
+  async findAll() {
+    return await this.clientService.findAll();
+  }
+
+  @Post()
+  async createClient(@Body() createClientDto: CreateClientDto) {
+    return await this.clientService.createClient(createClientDto);
+  }
+
+  @Patch(':client_id')
+  update(
+    @Param('client_id') client_id: string,
+    @Body() updateClientDto: UpdateClientDto,
+  ) {
+    return this.clientService.updateClient(+client_id, updateClientDto);
+  }
+
   @Post('/upi/create')
   async createClientUpi(
     @Req() req: Request,
-    @Body() createClientDto: CreateClientDto,
+    @Body() createClientDto: CreateClientUpiDto,
   ) {
     const client = await this.clientService.createClientUpi(
       req,
@@ -36,7 +54,7 @@ export class ClientController {
   async updateClientUpiStatus(
     @Req() req: Request,
     @Param('id') id: number,
-    @Body() updateClientDto: UpdateClientDto,
+    @Body() updateClientDto: UpdateClientUpiDto,
   ) {
     const updateClient = await this.clientService.updateClientUpiStatus(
       req,
