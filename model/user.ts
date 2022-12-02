@@ -1,6 +1,14 @@
 import { Model, Sequelize, DataTypes } from 'sequelize';
 
-export class User extends Model {}
+export class User extends Model {
+  static associate(models: any) {
+    this.hasMany(models.UserUpi, {
+      as: 'user_upi_data',
+      foreignKey: 'user_id',
+      // targetKey: 'user_id',
+    });
+  }
+}
 
 const model = (sequelize: Sequelize) => {
   User.init(

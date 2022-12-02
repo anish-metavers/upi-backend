@@ -217,7 +217,7 @@ export class UserService {
     const data = rolesToAdd.map((item) => {
       return { user_id, role_id: item };
     });
-    console.log('Data:', data);
+    // console.log('Data:', data);
     const rolesAdded = await global.DB.UserRole.bulkCreate(data);
 
     return { success: true, message: 'User Role updated Successfully!!' };
@@ -247,6 +247,28 @@ export class UserService {
     });
 
     return { success: true, message: 'Roles Deleted Successfully!!' };
+  }
+
+  async findAllUserUpi(req: Request) {
+    const user = await global.DB.User.findAll({
+      attributes: ['id', 'first_name', 'last_name', 'email'],
+
+      include: {
+        model: global.DB.UserUpi,
+        as: 'user_upi_data',
+        attributes: ['id', 'user_id', 'client_upi_id', 'status', 'created_at'],
+        include: {
+          model: global.DB.ClientUpi,
+          as: 'client_upi_data',
+          attributes: ['id', 'upi', 'client_id', 'status'],
+        },
+      },
+    });
+    return {
+      message: 'User Upis Fetched successfully',
+      response: { data: user },
+      success: true,
+    };
   }
 
   async updateUpi(
@@ -290,45 +312,48 @@ export class UserService {
     };
   }
 
-  async removeUpi(
-    req: Request,
-    user_id: number,
-    updateUserUpiDto: UpdateUserUpiDto,
-  ) {
-    const { upis } = updateUserUpiDto;
-    const find_clientUpi = await global.DB.ClientUpi.findAll({
-      where: { id: { [Op.in]: upis } },
+  // async removeUpi(
+  //   req: Request,
+  //   user_id: number,
+  //   updateUserUpiDto: UpdateUserUpiDto,
+  // ) {
+  //   const { upis } = updateUserUpiDto;
+  //   console.log(upis);
+  //   const find_clientUpi = await global.DB.ClientUpi.findAll({
+  //     where: { id: { [Op.in]: upis } },
+  //   });
+
+  //   if (find_clientUpi.length < upis.length) {
+  //     throw new HttpException('Client UPI id is out of range ', 401);
+  //   }
+  //   const find_userUpi = await global.DB.UserUpi.findAll({
+  //     where: { user_id },
+  //     attributes: ['id', 'user_id', 'client_upi_id'],
+  //   });
+
+  //   let upisToDelete = [...upis];
+
+  //   const upis_delete = await global.DB.UserUpi.destroy({
+  //     where: {
+  //       user_id: user_id,
+  //       client_upi_id: upisToDelete,
+  //     },
+  //   });
+
+  //   return {
+  //     message: ' Deleted successfully',
+  //     success: true,
+  //   };
+  // }
+  async removeUpi(id: number) {
+    const upis_delete = await global.DB.UserUpi.destroy({
+      where: { id },
     });
-
-    if (find_clientUpi.length < upis.length) {
-      throw new HttpException('Client UPI id is out of range ', 401);
-    }
-    const find_userUpi = await global.DB.UserUpi.findAll({
-      where: { user_id },
-      attributes: ['id', 'user_id', 'client_upi_id'],
-    });
-
-    let exist = find_userUpi;
-    let upisToDelete = [...upis];
-
-    for (let i = 0; i < find_userUpi.length; i++) {
-      for (let j = 0; j < upis.length; j++) {
-        if (exist[i].client_upi_id == upis[j]) {
-          upisToDelete.splice(upisToDelete.indexOf(upis[j]), 1);
-        }
-      }
-    }
-
-    for (let i = 0; i < upisToDelete.length; i++) {
-      const upis_delete = await global.DB.UserUpi.delete({
-        user_id: user_id,
-        client_upi_id: upisToDelete[i],
-      });
-    }
 
     return {
-      message: 'Successfully',
+      message: ' Deleted successfully',
       success: true,
+      response: [],
     };
   }
 }

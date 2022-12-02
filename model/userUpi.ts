@@ -1,6 +1,19 @@
 import { Model, Sequelize, DataTypes } from 'sequelize';
 
-class UserUpi extends Model {}
+class UserUpi extends Model {
+  static associate(models: any) {
+    this.belongsTo(models.ClientUpi, {
+      as: 'client_upi_data',
+      foreignKey: 'client_upi_id',
+      targetKey: 'id',
+    });
+    this.belongsTo(models.User, {
+      as: 'user_data',
+      foreignKey: 'user_id',
+      targetKey: 'id',
+    });
+  }
+}
 
 const model = (sequelize: Sequelize) => {
   UserUpi.init(
