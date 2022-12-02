@@ -30,6 +30,11 @@ export class UserController {
     return await this.userService.findAll(req);
   }
 
+  @Get('upi')
+  async findAllUserUpi(@Req() req: Request) {
+    return await this.userService.findAllUserUpi(req);
+  }
+
   @Get(':id')
   async findOne(@Req() req: Request, @Param('id') id: string) {
     return await this.userService.findOne(req, +id);
@@ -59,22 +64,28 @@ export class UserController {
   }
 
   // ANISH
-  @Patch('upi/:user_id')
+  @Post('upi/:user_id')
   async updateUpi(
     @Req() req: Request,
     @Param('user_id') user_id: string,
-    query: UpdateUserUpiDto,
+    @Body() body: UpdateUserUpiDto,
   ) {
-    return await this.userService.updateUpi(req, +user_id, query);
+    return await this.userService.updateUpi(req, +user_id, body);
   }
 
   // ANISH
-  @Delete('upi/:user_id')
-  async removeUpi(
-    @Req() req: Request,
-    @Param('user_id') user_id: string,
-    query: UpdateUserUpiDto,
-  ) {
-    return await this.userService.removeUpi(req, +user_id, query);
+  // @Delete('upi/:user_id')
+  // async removeUpi(
+  //   @Req() req: Request,
+  //   @Param('user_id') user_id: string,
+  //   @Body() body: UpdateUserUpiDto,
+  // ) {
+  //   return await this.userService.removeUpi(req, +user_id, body);
+  // }
+
+  // ANISH
+  @Delete('upi/:id')
+  async removeUpi(@Req() req: Request, @Param('id') id: string) {
+    return await this.userService.removeUpi(+id);
   }
 }
