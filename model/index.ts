@@ -8,6 +8,7 @@ import Permission from './permission';
 import RolePermission from './rolePermission';
 import UserRole from './userRoles';
 import User from './user';
+import UserUpi from './userUpi';
 
 const DATABASE = async () => {
   const sequelize = new Sequelize(
@@ -42,6 +43,7 @@ const DATABASE = async () => {
       RolePermission: RolePermission(sequelize),
       UserRole: UserRole(sequelize),
       User: User(sequelize),
+      UserUpi: UserUpi(sequelize),
     };
 
     // Setting the association of model
@@ -51,7 +53,7 @@ const DATABASE = async () => {
       }
     });
 
-    // await sequelize.sync({ alter: true });
+    //await sequelize.sync({ force : true });
 
     global.DB = db;
   } catch (error) {
