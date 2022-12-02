@@ -41,12 +41,12 @@ export class UserController {
   // }
 
   @Post('role/:user_id')
-  async updateRole(
+  async addRole(
     @Req() req: Request,
     @Param('user_id') user_id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    return await this.userService.updateRole(req, +user_id, updateUserDto);
+    return await this.userService.addRole(req, +user_id, updateUserDto);
   }
 
   @Delete('role/:user_id')

@@ -191,3 +191,25 @@ Response: {
     "success": true,
     "message": "Roles Deleted Successfully!!"
 }
+
+7. Create Client API
+
+Url: '/client/'
+Method: 'POST'
+Query: {}
+Headers: {Authorization : 'Bearer Token'}
+Body: {
+    "name": "Client 2",
+    "email": "client2@mail.com"
+}
+Response: {
+    "success": true,
+    "response": {
+        "data": {
+            "id": 4,
+            "name": "Client 3",
+            "email": "client3@mail.com"
+        }
+    },
+    "message": "Client Created Successfully!!"
+}

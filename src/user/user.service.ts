@@ -53,14 +53,19 @@ export class UserService {
         attributes: ['id', 'name', 'priority'],
       },
     });
+
+    let maxGuardUserRole = guardUserRoles[0];
+    for (let guard_role of guardUserRoles) {
+      if (guard_role.role_data.priority > maxGuardUserRole.role_data.priority)
+        maxGuardUserRole = guard_role;
+    }
+
     for (let role of checkRoles) {
-      for (let guard_role of guardUserRoles) {
-        if (guard_role.role_data.priority <= role.priority)
-          throw new HttpException(
-            { message: 'You can not create user above your Role!!' },
-            400,
-          );
-      }
+      if (maxGuardUserRole.role_data.priority <= role.priority)
+        throw new HttpException(
+          { message: 'You can not create user above your Role!!' },
+          400,
+        );
     }
 
     const hashedPassword = password; //await bcrypt.hash(password, 10);
@@ -158,11 +163,7 @@ export class UserService {
     };
   }
 
-  async updateRole(
-    req: Request,
-    user_id: number,
-    updateUserDto: UpdateUserDto,
-  ) {
+  async addRole(req: Request, user_id: number, updateUserDto: UpdateUserDto) {
     const { roles } = updateUserDto;
     const guard_user_id = req['user_id'];
 
@@ -185,15 +186,18 @@ export class UserService {
         attributes: ['id', 'name', 'priority'],
       },
     });
+    let maxGuardUserRole = guardUserRoles[0];
+    for (let guard_role of guardUserRoles) {
+      if (guard_role.role_data.priority > maxGuardUserRole.role_data.priority)
+        maxGuardUserRole = guard_role;
+    }
 
     for (let role of checkRoles) {
-      for (let guard_role of guardUserRoles) {
-        if (guard_role.role_data.priority <= role.priority)
-          throw new HttpException(
-            { message: 'You can not add Role above your own Role!!' },
-            400,
-          );
-      }
+      if (maxGuardUserRole.role_data.priority <= role.priority)
+        throw new HttpException(
+          { message: 'You can not create user above your Role!!' },
+          400,
+        );
     }
 
     const user = await global.DB.User.findOne({ where: { id: user_id } });
