@@ -213,3 +213,130 @@ Response: {
     },
     "message": "Client Created Successfully!!"
 }
+
+8. Get Role Permission API
+
+Url: '/user/role-permission'
+Method: 'GET'
+Query: {}
+Headers: {Authorization : 'Bearer Token'}
+Body: {}
+Response: {
+    "message": "Role and Permission fetched successfully",
+    "success": true,
+    "response": {
+        "data": {
+            "roles": [
+                {
+                    "id": 1,
+                    "name": "Master Admin",
+                    "priority": 5000
+                }
+            ],
+            "permissions": [
+                {
+                    "id": 1,
+                    "name": "Client:Create",
+                    "path": "/client",
+                    "method": "post"
+                },
+                {
+                    "id": 2,
+                    "name": "Client:Read",
+                    "path": "/client",
+                    "method": "get"
+                },
+                {
+                    "id": 3,
+                    "name": "Client:Update",
+                    "path": "/client/:client_id",
+                    "method": "patch"
+                },
+                {
+                    "id": 4,
+                    "name": "Client:Delete",
+                    "path": "/client",
+                    "method": "delete"
+                },
+                {
+                    "id": 5,
+                    "name": "User:Create",
+                    "path": "/user",
+                    "method": "post"
+                },
+                {
+                    "id": 6,
+                    "name": "User:Read",
+                    "path": "/user",
+                    "method": "get"
+                },
+                {
+                    "id": 7,
+                    "name": "User:ReadOne",
+                    "path": "/user/:user_id",
+                    "method": "get"
+                },
+                {
+                    "id": 8,
+                    "name": "User:Update",
+                    "path": "/user/role/:user_id",
+                    "method": "patch"
+                },
+                {
+                    "id": 9,
+                    "name": "User:Delete",
+                    "path": "/user/role/:user_id",
+                    "method": "delete"
+                },
+                {
+                    "id": 10,
+                    "name": "ClientUpi:Create",
+                    "path": "/client/upi/create",
+                    "method": "post"
+                },
+                {
+                    "id": 11,
+                    "name": "ClientUpi:Read",
+                    "path": "/client/upi/list",
+                    "method": "get"
+                },
+                {
+                    "id": 12,
+                    "name": "ClientUpi:Update",
+                    "path": "/client/upi/update/:id",
+                    "method": "patch"
+                },
+                {
+                    "id": 13,
+                    "name": "Transaction:Read",
+                    "path": "/transaction/list",
+                    "method": "get"
+                },
+                {
+                    "id": 14,
+                    "name": "Transaction:Update",
+                    "path": "/transaction/status/:trxn_id",
+                    "method": "patch"
+                },
+                {
+                    "id": 15,
+                    "name": "UserUpi:Create",
+                    "path": "/user/upi/:user_id",
+                    "method": "post"
+                },
+                {
+                    "id": 16,
+                    "name": "UserUpi:Read",
+                    "path": "/user/upi",
+                    "method": "get"
+                },
+                {
+                    "id": 17,
+                    "name": "UserUpi:Delete",
+                    "path": "/user/upi/:id",
+                    "method": "delete"
+                }
+            ]
+        }
+    }
+}

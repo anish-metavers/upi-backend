@@ -95,8 +95,12 @@ export class UserService {
   }
 
   async findAll(req: Request) {
+    const client_id = req['client_id'];
+    const user_id = req['user_id'];
+    const isMaster = req['isMaster'];
+
     const users = await global.DB.User.findAll({
-      where: {},
+      where: { ...(isMaster ? {} : { client_id }) },
       attributes: { exclude: ['createdAt', 'updatedAt', 'password'] },
     });
 
@@ -244,7 +248,12 @@ export class UserService {
         404,
       );
 
-    // const userRoles = await global.DB.UserRole.findAll({ where: { user_id } });
+    const userRoles = await global.DB.UserRole.findAll({ where: { user_id } });
+    if (userRoles.length < 2)
+      throw new HttpException(
+        { message: 'At Least One Role is Required' },
+        401,
+      );
 
     await global.DB.UserRole.destroy({
       where: { user_id, role_id: { [Op.in]: roles } },
@@ -357,7 +366,40 @@ export class UserService {
     return {
       message: ' Deleted successfully',
       success: true,
-      response: [],
+      response: {},
+    };
+  }
+
+  async findUserRolePermissions(req: Request) {
+    const user_id = req['user_id'];
+
+    const userRoles = await global.DB.UserRole.findAll({
+      where: { user_id },
+    });
+    let userRolesArr = userRoles.map((item: any) => item.role_id);
+
+    const userRolePermission = await global.DB.RolePermission.findAll({
+      where: { role_id: { [Op.in]: userRolesArr } },
+    });
+    let userPermissionsArr = userRolePermission.map(
+      (item: any) => item.permission_id,
+    );
+
+    const [roles, permissions] = await Promise.all([
+      global.DB.Role.findAll({
+        where: { id: { [Op.in]: userRolesArr } },
+        attributes: ['id', 'name', 'priority'],
+      }),
+      global.DB.Permission.findAll({
+        where: { id: { [Op.in]: userPermissionsArr } },
+        attributes: ['id', 'name', 'path', 'method'],
+      }),
+    ]);
+
+    return {
+      message: 'Role and Permission fetched successfully',
+      success: true,
+      response: { data: { roles, permissions } },
     };
   }
 }

@@ -9,7 +9,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { AuthGuard } from 'guard/authGuard';
+import { AuthGuard } from 'guard/auth.guard';
+import { PermissionGuard } from 'guard/permission.guard';
 import { TransactionListFilterDto } from './dto/create-upi.dto';
 import {
   InitTransactionDTO,
@@ -23,26 +24,19 @@ import { TransactionService } from './transaction.service';
 export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, PermissionGuard)
   @Get('list')
   async getTransactionList(
     @Req() req: Request,
     @Query() transactionListQuery: TransactionListFilterDto,
   ) {
-    const client_id = req['client_id'];
-    return {
-      statusCode: 200,
-      response: {
-        data: await this.transactionService.getTransactionList(
-          client_id,
-          transactionListQuery,
-        ),
-      },
-      success: true,
-    };
+    return await this.transactionService.getTransactionList(
+      req,
+      transactionListQuery,
+    );
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, PermissionGuard)
   @Patch('status/:trxn_id')
   async updateStatus(
     @Param('trxn_id') trxn_id: string,
@@ -61,7 +55,6 @@ export class TransactionController {
       success: true,
     };
   }
-
 
   @Get('init/:order_id')
   async initTransaction(
