@@ -9,14 +9,15 @@ import {
   Get,
   Patch,
 } from '@nestjs/common';
-import { AuthGuard } from 'guard/authGuard';
 import { ClientService } from './client.service';
 import { CreateClientDto, CreateClientUpiDto } from './dto/create-client.dto';
 import { UpdateClientDto, UpdateClientUpiDto } from './dto/update-client.dto';
 import { Request } from 'express';
+import { AuthGuard } from 'guard/auth.guard';
+import { PermissionGuard } from 'guard/permission.guard';
 
 @Controller('client')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PermissionGuard)
 export class ClientController {
   constructor(private readonly clientService: ClientService) {}
 

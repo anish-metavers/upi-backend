@@ -1,4 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { Request } from 'express';
 import { Op } from 'sequelize';
 import { ThirdPartyService } from 'src/third-party/third-party.service';
 import { TransactionListFilterDto } from './dto/create-upi.dto';
@@ -14,7 +15,7 @@ export class TransactionService {
   constructor(private readonly thirdPartyService: ThirdPartyService) {}
 
   async getTransactionList(
-    client_id: number,
+    req: Request,
     transactionListQuery: TransactionListFilterDto,
   ) {
     const {
@@ -34,7 +35,21 @@ export class TransactionService {
       note,
     } = transactionListQuery;
 
-    let filterObject: any = { ...(client_id ? { client_id } : {}) };
+    const client_id = req['client_id'];
+    const user_id = req['user_id'];
+    const isMaster = req['isMaster'];
+
+    const userUpis = await global.DB.UserUpi.findAll({
+      where: { user_id },
+    });
+
+    let filterObject: any = { ...(!isMaster ? { client_id } : {}) };
+
+    if (!isMaster && userUpis && userUpis.length > 0) {
+      filterObject.client_upi_id = {
+        [Op.in]: userUpis.map((item) => item.client_upi_id),
+      };
+    }
 
     if (utr) filterObject.utr = { [Op.like]: `%${utr}%` };
     if (user_upi) filterObject.user_upi = { [Op.like]: `%${user_upi}%` };
@@ -61,6 +76,7 @@ export class TransactionService {
       };
 
     const transactions = await global.DB.Transaction.findAll({
+      where: filterObject,
       attributes: [
         'id',
         'client_id',
@@ -76,11 +92,14 @@ export class TransactionService {
         'created_at',
         'updated_at',
       ],
-      where: filterObject,
-      //logging: true
     });
     if (!transactions) throw new HttpException('Invalid client id', 400);
-    return transactions;
+
+    return {
+      success: true,
+      statusCode: 200,
+      response: { data: transactions },
+    };
   }
 
   async initTransaction(order_id: string, query: InitTransactionDTO) {
