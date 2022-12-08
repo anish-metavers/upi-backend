@@ -75,7 +75,25 @@ export class ClientService {
     createClientDto: CreateClientUpiDto,
   ) {
     const { upi } = createClientDto;
-    const client_id = req['client_id'];
+    let client_id = req['client_id'];
+
+    if (!client_id) {
+      client_id = createClientDto.client_id;
+      if (!client_id)
+        throw new HttpException(
+          { message: 'client_id is Required: For Master Admin!!' },
+          400,
+        );
+
+      const checkClient = await global.DB.Client.findOne({
+        where: { id: createClientDto.client_id },
+      });
+      if (!checkClient)
+        throw new HttpException(
+          { message: 'Invalid ClientId Selected!!' },
+          400,
+        );
+    }
     let clientUpi;
     try {
       clientUpi = await global.DB.ClientUpi.create({
