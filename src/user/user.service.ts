@@ -61,7 +61,7 @@ export class UserService {
     }
 
     for (let role of checkRoles) {
-      if (maxGuardUserRole.role_data.priority <= role.priority)
+      if (maxGuardUserRole.role_data.priority < role.priority)
         throw new HttpException(
           { message: 'You can not create user above your Role!!' },
           400,
