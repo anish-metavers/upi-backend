@@ -44,11 +44,7 @@ export class ClientController {
     @Req() req: Request,
     @Body() createClientDto: CreateClientUpiDto,
   ) {
-    const client = await this.clientService.createClientUpi(
-      req,
-      createClientDto,
-    );
-    return client;
+    return await this.clientService.createClientUpi(req, createClientDto);
   }
 
   @Patch('/upi/update/:id')

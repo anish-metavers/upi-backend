@@ -127,11 +127,12 @@ export class TransactionService {
         client_id,
       });
 
+
       if (
         !ApiRes ||
         !ApiRes.response ||
-        !ApiRes.response.status ||
-        ApiRes.response.response
+        !ApiRes.response.success ||
+        !ApiRes.response.response
       )
         throw new HttpException(
           {
