@@ -1,20 +1,45 @@
 import { HttpException, Injectable, Req } from '@nestjs/common';
-import { CreateClientDto, CreateClientUpiDto } from './dto/create-client.dto';
+import {
+  ClientListDto,
+  CreateClientDto,
+  CreateClientUpiDto,
+} from './dto/create-client.dto';
 import { UpdateClientDto, UpdateClientUpiDto } from './dto/update-client.dto';
 import { Request } from 'express';
 import { Op } from 'sequelize';
 
 @Injectable()
 export class ClientService {
-  async findAll() {
-    const clients = await global.DB.Client.findAll({
-      where: {},
-      attributes: ['id', 'name', 'email', 'status'],
+  async findAll(query: ClientListDto) {
+    let { limit, page } = query;
+    const filterObject = {};
+
+    limit = Number(limit) || 10;
+    page = Number(page) || 1;
+
+    const totalItems = await global.DB.Client.count({
+      where: filterObject,
     });
+    const offset = limit * (page - 1);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    console.log('Page: ', page);
+    console.log('limit: ', limit);
+    console.log('totalItems: ', totalItems);
+    console.log('offset: ', offset);
+    console.log('totalPages: ', totalPages);
+
+    const clients = await global.DB.Client.findAll({
+      where: filterObject,
+      attributes: ['id', 'name', 'email', 'status'],
+      limit,
+      offset,
+    });
+
     return {
       success: true,
-      response: { data: clients },
       message: 'Client List Fetched Successfully!!',
+      response: { data: clients, limit, page, totalItems, totalPages },
     };
   }
 

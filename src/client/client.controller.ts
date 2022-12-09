@@ -8,9 +8,14 @@ import {
   Param,
   Get,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { ClientService } from './client.service';
-import { CreateClientDto, CreateClientUpiDto } from './dto/create-client.dto';
+import {
+  ClientListDto,
+  CreateClientDto,
+  CreateClientUpiDto,
+} from './dto/create-client.dto';
 import { UpdateClientDto, UpdateClientUpiDto } from './dto/update-client.dto';
 import { Request } from 'express';
 import { AuthGuard } from 'guard/auth.guard';
@@ -22,8 +27,8 @@ export class ClientController {
   constructor(private readonly clientService: ClientService) {}
 
   @Get()
-  async findAll() {
-    return await this.clientService.findAll();
+  async findAll(@Query() query: ClientListDto) {
+    return await this.clientService.findAll(query);
   }
 
   @Post()
@@ -62,7 +67,7 @@ export class ClientController {
   }
 
   @Get('/upi/list')
-  async getClientApiList(@Req() req: Request) {
+  async getClientUpiList(@Req() req: Request) {
     const client_id = req['client_id'];
     const clientList = await this.clientService.getClientList(client_id);
     return clientList;

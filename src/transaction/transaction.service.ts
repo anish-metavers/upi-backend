@@ -35,6 +35,11 @@ export class TransactionService {
       note,
     } = transactionListQuery;
 
+    let { limit, page } = transactionListQuery;
+
+    limit = Number(limit) || 10;
+    page = Number(page) || 1;
+
     const client_id = req['client_id'];
     const user_id = req['user_id'];
     const isMaster = req['isMaster'];
@@ -75,6 +80,12 @@ export class TransactionService {
         ],
       };
 
+    const totalItems = await global.DB.Transaction.count({
+      where: filterObject,
+    });
+    const offset = limit * (page - 1);
+    const totalPages = Math.ceil(totalItems / limit);
+
     const transactions = await global.DB.Transaction.findAll({
       where: filterObject,
       attributes: [
@@ -92,13 +103,23 @@ export class TransactionService {
         'created_at',
         'updated_at',
       ],
+      limit,
+      offset,
+      order: [['created_at', 'DESC']],
     });
-    if (!transactions) throw new HttpException('Invalid client id', 400);
+    // if (!transactions) throw new HttpException('Invalid client id', 400);
 
     return {
       success: true,
+      message: 'Transaction List Fetched Successfully!!',
       statusCode: 200,
-      response: { data: transactions },
+      response: {
+        data: transactions,
+        limit,
+        page,
+        totalItems,
+        totalPages,
+      },
     };
   }
 
@@ -126,7 +147,6 @@ export class TransactionService {
         apiType: 'GET_TRANSACTION',
         client_id,
       });
-
 
       if (
         !ApiRes ||
