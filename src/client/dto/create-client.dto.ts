@@ -15,3 +15,9 @@ export class CreateClientDto {
   @IsNotEmpty()
   email: string;
 }
+
+export class ClientListDto {
+  page: number;
+
+  limit: number;
+}

@@ -8,9 +8,10 @@ import {
   Delete,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, UserListDto } from './dto/create-user.dto';
 import { UpdateUserDto, UpdateUserUpiDto } from './dto/update-user.dto';
 import { Request } from 'express';
 import { AuthGuard } from 'guard/auth.guard';
@@ -26,8 +27,8 @@ export class UserController {
   }
   @UseGuards(AuthGuard, PermissionGuard)
   @Get()
-  async findAllUser(@Req() req: Request) {
-    return await this.userService.findAll(req);
+  async findAllUser(@Req() req: Request, @Query() query: UserListDto) {
+    return await this.userService.findAll(req, query);
   }
   @UseGuards(AuthGuard, PermissionGuard)
   @Get('upi')

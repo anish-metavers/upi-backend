@@ -43,7 +43,7 @@ export class TransactionListFilterDto {
 
   verify_timestamp_end: string;
 
-  page_no: number;
+  page: number;
 
-  page_size: number;
+  limit: number;
 }

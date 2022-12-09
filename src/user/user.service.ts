@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, UserListDto } from './dto/create-user.dto';
 import { UpdateUserDto, UpdateUserUpiDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { Op } from 'sequelize';
@@ -94,14 +94,28 @@ export class UserService {
     };
   }
 
-  async findAll(req: Request) {
+  async findAll(req: Request, query: UserListDto) {
     const client_id = req['client_id'];
     const user_id = req['user_id'];
     const isMaster = req['isMaster'];
 
+    let { limit, page } = query;
+    const filterObject = { ...(isMaster ? {} : { client_id }) };
+
+    limit = Number(limit) || 10;
+    page = Number(page) || 1;
+
+    const totalItems = await global.DB.User.count({
+      where: filterObject,
+    });
+    const offset = limit * (page - 1);
+    const totalPages = Math.ceil(totalItems / limit);
+
     const users = await global.DB.User.findAll({
-      where: { ...(isMaster ? {} : { client_id }) },
+      where: filterObject,
       attributes: { exclude: ['createdAt', 'updatedAt', 'password'] },
+      limit,
+      offset,
     });
 
     const userRoles = await global.DB.UserRole.findAll({
@@ -112,7 +126,7 @@ export class UserService {
         attributes: ['id', 'name', 'priority'],
       },
     });
-    let usersData = [];
+    const usersData = [];
 
     for (let user of users) {
       user = user.toJSON();
@@ -131,6 +145,10 @@ export class UserService {
       message: 'User List Fetched Successfully',
       response: {
         data: usersData,
+        limit,
+        page,
+        totalItems,
+        totalPages,
       },
     };
   }

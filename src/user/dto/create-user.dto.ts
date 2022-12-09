@@ -18,3 +18,8 @@ export class CreateUserDto {
   @IsNotEmpty()
   roles: number[];
 }
+
+export class UserListDto {
+  page: number;
+  limit: number;
+}
