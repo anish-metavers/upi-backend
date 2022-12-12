@@ -67,6 +67,36 @@ const model = (sequelize: Sequelize) => {
       },
     },
     {
+      indexes: [
+        {
+          fields: ['client_id'],
+          unique: false,
+        },
+        {
+          fields: ['client_upi_id'],
+          unique: false,
+        },
+        {
+          fields: ['order_id'],
+          unique: false,
+        },
+        {
+          fields: ['user_upi'],
+          unique: false,
+        },
+        {
+          fields: ['utr'],
+          unique: false,
+        },
+        {
+          fields: ['note'],
+          unique: false,
+        },
+        {
+          fields: ['amount'],
+          unique: false,
+        },
+      ],
       timestamps: true,
       sequelize,
       modelName: 'Transaction',
