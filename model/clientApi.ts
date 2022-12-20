@@ -16,6 +16,10 @@ const model = (sequelize: any) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      portal_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
       api_type: {
         type: DataTypes.ENUM('GET_TRANSACTION', 'UPDATE_TRANSACTION'),
         allowNull: false,

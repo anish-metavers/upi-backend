@@ -5,7 +5,16 @@ export class User extends Model {
     this.hasMany(models.UserUpi, {
       as: 'user_upi_data',
       foreignKey: 'user_id',
-      // targetKey: 'user_id',
+    });
+
+    this.hasMany(models.UserRole, {
+      as: 'user_role_data',
+      foreignKey: 'user_id',
+    });
+
+    this.hasMany(models.UserPortal, {
+      as: 'user_portal_data',
+      foreignKey: 'user_id',
     });
   }
 }

@@ -42,19 +42,44 @@ export class TransactionService {
 
     const client_id = req['client_id'];
     const user_id = req['user_id'];
-    const isMaster = req['isMaster'];
+    const user_role_name = req['role_name'];
 
-    const userUpis = await global.DB.UserUpi.findAll({
-      where: { user_id },
-    });
+    // const userUpis = await global.DB.UserUpi.findAll({
+    //   where: { user_id },
+    // });
 
-    let filterObject: any = { ...(!isMaster ? { client_id } : {}) };
+    let filterObject: any = {};
+    console.log('user_role_name:', user_role_name);
 
-    if (!isMaster && userUpis && userUpis.length > 0) {
-      filterObject.client_upi_id = {
-        [Op.in]: userUpis.map((item) => item.client_upi_id),
-      };
+    if (user_role_name === 'Admin') filterObject.client_id = client_id;
+    else if (user_role_name === 'Portal Manager') {
+      const userPortals = await global.DB.UserPortal.findAll({
+        where: { user_id },
+        attributes: ['id', 'portal_id'],
+      });
+      filterObject.portal_id =
+        userPortals.length > 0
+          ? {
+              [Op.in]: userPortals.map((item: any) => item.portal_id),
+            }
+          : 0;
+    } else if (user_role_name === 'Transaction Manager') {
+      const userUpis = await global.DB.UserUpi.findAll({
+        where: { user_id },
+        attributes: ['id', 'client_upi_id'],
+      });
+      filterObject.client_upi_id =
+        userUpis.length > 0
+          ? {
+              [Op.in]: userUpis.map((item: any) => item.client_upi_id),
+            }
+          : 0;
     }
+    // if (!isMaster && userUpis && userUpis.length > 0) {
+    //   filterObject.client_upi_id = {
+    //     [Op.in]: userUpis.map((item) => item.client_upi_id),
+    //   };
+    // }
 
     if (utr) filterObject.utr = { [Op.like]: `%${utr}%` };
     if (user_upi) filterObject.user_upi = { [Op.like]: `%${user_upi}%` };
@@ -91,6 +116,7 @@ export class TransactionService {
       attributes: [
         'id',
         'client_id',
+        'portal_id',
         'order_id',
         'amount',
         'client_upi',
@@ -124,7 +150,11 @@ export class TransactionService {
   }
 
   async initTransaction(order_id: string, query: InitTransactionDTO) {
-    const { client_id } = query;
+    const { portal_id } = query;
+
+    const portal = await global.DB.Portal.findOne({ where: { id: portal_id } });
+    if (!portal) throw new HttpException({ message: 'Portal not found' }, 404);
+
     const data = await global.DB.Transaction.findOne({
       attributes: [
         'id',
@@ -138,15 +168,20 @@ export class TransactionService {
         'end_at',
         'note',
       ],
-      where: { order_id, client_id },
+      where: { order_id, portal_id },
     });
 
     if (!data) {
-      const ApiRes = await this.thirdPartyService.callApiForClient({
-        apiReq: { query: { order_id } },
-        apiType: 'GET_TRANSACTION',
-        client_id,
-      });
+      const [ApiRes, clientUpi] = await Promise.all([
+        this.thirdPartyService.callApiForClient({
+          apiReq: { query: { order_id } },
+          apiType: 'GET_TRANSACTION',
+          portal_id,
+        }),
+        global.DB.ClientUpi.findAll({
+          where: { portal_id, status: '1' },
+        }),
+      ]);
 
       if (
         !ApiRes ||
@@ -166,16 +201,17 @@ export class TransactionService {
       if (data.status != 'OPEN')
         throw new HttpException('This Transaction Status is not OPEN!', 401);
 
-      const clientUpi = await global.DB.ClientUpi.findAll({
-        where: { client_id, status: '1' },
-      });
+      if (!clientUpi || clientUpi.length == 0) {
+        throw new HttpException({ message: 'Client UPI is Empty!' }, 401);
+      }
 
       const randIndex = Math.floor(Math.random() * clientUpi.length);
 
       await global.DB.Transaction.create({
         client_upi: clientUpi[randIndex].upi,
         client_upi_id: clientUpi[randIndex].id,
-        client_id,
+        client_id: portal.client_id,
+        portal_id,
         order_id,
         amount: data.amount,
         note: data.note,
@@ -195,7 +231,7 @@ export class TransactionService {
           'end_at',
           'note',
         ],
-        where: { order_id, client_id },
+        where: { order_id, portal_id },
       });
     }
 
@@ -245,7 +281,7 @@ export class TransactionService {
         body: { status: 'PROCESSING' },
       },
       apiType: 'UPDATE_TRANSACTION',
-      client_id: transaction.client_id,
+      portal_id: transaction.portal_id,
     });
 
     if (!ApiRes.response.success)
@@ -264,12 +300,6 @@ export class TransactionService {
     updateStatusDto: UpdateStatusDto,
   ) {
     const { status } = updateStatusDto;
-
-    if (!client_id)
-      throw new HttpException(
-        { message: 'Master Admin can not change Transaction Status!!' },
-        404,
-      );
 
     const transaction = await global.DB.Transaction.findOne({ where: { id } });
 
@@ -290,7 +320,7 @@ export class TransactionService {
     const ApiRes = await this.thirdPartyService.callApiForClient({
       apiReq: { query: { order_id: transaction.order_id }, body: { status } },
       apiType: 'UPDATE_TRANSACTION',
-      client_id,
+      portal_id: transaction.portal_id,
     });
     if (!ApiRes.response.success)
       throw new HttpException('Client API Error', 400);

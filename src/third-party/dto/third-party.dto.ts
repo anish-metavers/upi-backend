@@ -1,6 +1,6 @@
 export class CallApiForClient {
   apiReq: any;
-  client_id: string | number;
+  portal_id: string | number;
   apiType: string;
 }
 

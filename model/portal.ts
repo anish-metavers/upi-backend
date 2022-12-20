@@ -1,22 +1,9 @@
-import {
-  Model,
-  Sequelize,
-  DataTypes,
-  InferAttributes,
-  InferCreationAttributes,
-  CreationOptional,
-} from 'sequelize';
+import { Model, Sequelize, DataTypes } from 'sequelize';
 
-class Role extends Model<InferAttributes<Role>, InferCreationAttributes<Role>> {
-  declare id: number;
-  declare name: string;
-  declare priority: number;
-  declare createdAt: CreationOptional<Date>;
-  declare updatedAt: CreationOptional<Date>;
-}
+class Portal extends Model {}
 
 const model = (sequelize: Sequelize) => {
-  Role.init(
+  Portal.init(
     {
       // Model attributes are defined here
       id: {
@@ -25,14 +12,35 @@ const model = (sequelize: Sequelize) => {
         autoIncrement: true,
         allowNull: false,
       },
+      client_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
       name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      domain: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
       },
-      priority: {
+      redirect_url: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      status: {
+        type: DataTypes.ENUM('ACTIVE', 'INACTIVE'),
+        defaultValue: 'ACTIVE',
+      },
+      created_by: {
         type: DataTypes.INTEGER,
         allowNull: false,
+      },
+      updated_by: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
       },
       createdAt: {
         type: DataTypes.DATE,
@@ -46,13 +54,14 @@ const model = (sequelize: Sequelize) => {
       },
     },
     {
+      indexes: [],
       timestamps: true,
       sequelize,
-      modelName: 'Role',
-      tableName: 'roles',
+      modelName: 'Portal',
+      tableName: 'portals',
     },
   );
-  return Role;
+  return Portal;
 };
 
 export default model;

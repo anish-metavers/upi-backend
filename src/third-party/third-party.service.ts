@@ -10,13 +10,13 @@ import {
 @Injectable()
 export class ThirdPartyService {
   async callApiForClient(data: CallApiForClient) {
-    const { apiReq, apiType, client_id } = data;
+    const { apiReq, apiType, portal_id } = data;
 
     // Fetch Client from Domain
-    const client = await this.getClientFromDomain(client_id);
+    const portal = await this.getClientFromDomain(portal_id);
     // console.log(client);
 
-    if (client.isError) return { isError: true, message: 'No Client Found!!' };
+    if (portal.isError) return { isError: true, message: 'No Client Found!!' };
 
     // Renew Token if Token Not Found!!
     // let clientToken = client.data.token;
@@ -30,7 +30,7 @@ export class ThirdPartyService {
     // }
 
     // Fetch Client API Info by Client Id and Api Type
-    const clientApi = await this.getApiInfo(client.data.id, apiType);
+    const clientApi = await this.getApiInfo(portal.data.id, apiType);
     // console.log(clientApi);
 
     if (clientApi.isError)
@@ -46,7 +46,7 @@ export class ThirdPartyService {
     };
 
     // Call API and Save Logs
-    let ApiRes = await this.callApiAndSaveLog(client.data.id, clientApi.data, {
+    let ApiRes = await this.callApiAndSaveLog(portal.data.id, clientApi.data, {
       apiReq,
       headers,
     });
@@ -98,33 +98,33 @@ export class ThirdPartyService {
     //     };
     // }
     return {
-      client_id: client.data.id,
+      client_id: portal.data.id,
       response: ApiRes.response,
     };
   }
 
-  async getClientFromDomain(client_id: string | number) {
+  async getClientFromDomain(portal_id: string | number) {
     // ALGO
-    const client = await global.DB.Client.findOne({
-      where: { id: client_id, status: '1' },
+    const portal = await global.DB.Portal.findOne({
+      where: { id: portal_id },
       attributes: ['id'],
     });
 
-    if (!client)
+    if (!portal)
       return {
         isError: true,
       };
 
     return {
-      data: client.toJSON(),
+      data: portal.toJSON(),
       isError: false,
     };
   }
 
-  async getApiInfo(client_id: string | number, api_type: string) {
+  async getApiInfo(portal_id: string | number, api_type: string) {
     const clientApi = await global.DB.ClientApi.findOne({
       where: {
-        client_id,
+        portal_id,
         api_type,
         status: '1',
       },

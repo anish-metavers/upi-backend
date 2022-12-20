@@ -20,6 +20,8 @@ export class CreateUserDto {
 }
 
 export class UserListDto {
+  role_id: string | number;
+  role_name: string;
   page: number;
   limit: number;
 }

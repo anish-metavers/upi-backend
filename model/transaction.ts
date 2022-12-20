@@ -16,6 +16,10 @@ const model = (sequelize: Sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      portal_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
       client_upi_id: {
         type: DataTypes.INTEGER,
       },
