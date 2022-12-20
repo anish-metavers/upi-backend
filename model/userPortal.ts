@@ -1,18 +1,30 @@
 import { Model, Sequelize, DataTypes } from 'sequelize';
 
-class ClientUpi extends Model {}
+class UserPortal extends Model {
+  static associate(models: any) {
+    this.belongsTo(models.Portal, {
+      as: 'portal_data',
+      foreignKey: 'portal_id',
+      targetKey: 'id',
+    });
+    this.belongsTo(models.User, {
+      as: 'user_data',
+      foreignKey: 'user_id',
+      targetKey: 'id',
+    });
+  }
+}
 
 const model = (sequelize: Sequelize) => {
-  ClientUpi.init(
+  UserPortal.init(
     {
-      // Model attributes are defined here
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true,
         allowNull: false,
+        autoIncrement: true,
       },
-      client_id: {
+      user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
@@ -20,15 +32,9 @@ const model = (sequelize: Sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      upi: {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: false,
-      },
       status: {
-        type: DataTypes.ENUM('0', '1'),
-        allowNull: false,
-        defaultValue: '1',
+        type: DataTypes.ENUM('ACTIVE', 'INACTIVE'),
+        defaultValue: 'ACTIVE',
       },
       createdAt: {
         type: DataTypes.DATE,
@@ -42,13 +48,19 @@ const model = (sequelize: Sequelize) => {
       },
     },
     {
+      indexes: [
+        {
+          unique: true,
+          fields: ['portal_id', 'user_id'],
+          name: 'portal_id_and_user_id',
+        },
+      ],
       timestamps: true,
       sequelize,
-      modelName: 'ClientUpi',
-      tableName: 'client_upis',
+      modelName: 'UserPortal',
+      tableName: 'user_portals',
     },
   );
-  return ClientUpi;
+  return UserPortal;
 };
-
 export default model;

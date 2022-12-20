@@ -20,5 +20,5 @@ export class VerifyUtrDto {
 
 export class InitTransactionDTO {
   @IsNotEmpty()
-  client_id: string | number;
+  portal_id: string | number;
 }

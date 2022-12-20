@@ -27,8 +27,8 @@ export class ClientController {
   constructor(private readonly clientService: ClientService) {}
 
   @Get()
-  async findAll(@Query() query: ClientListDto) {
-    return await this.clientService.findAll(query);
+  async findAll(@Req() req: Request, @Query() query: ClientListDto) {
+    return await this.clientService.findAll(req, query);
   }
 
   @Post()
@@ -52,15 +52,15 @@ export class ClientController {
     return await this.clientService.createClientUpi(req, createClientDto);
   }
 
-  @Patch('/upi/update/:id')
+  @Patch('/upi/update/:client_upi_id')
   async updateClientUpiStatus(
     @Req() req: Request,
-    @Param('id') id: number,
+    @Param('client_upi_id') client_upi_id: number,
     @Body() updateClientDto: UpdateClientUpiDto,
   ) {
     const updateClient = await this.clientService.updateClientUpiStatus(
       req,
-      id,
+      client_upi_id,
       updateClientDto,
     );
     return updateClient;
@@ -68,8 +68,7 @@ export class ClientController {
 
   @Get('/upi/list')
   async getClientUpiList(@Req() req: Request) {
-    const client_id = req['client_id'];
-    const clientList = await this.clientService.getClientList(client_id);
+    const clientList = await this.clientService.getClientUpiList(req);
     return clientList;
   }
 }

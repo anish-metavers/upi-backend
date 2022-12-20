@@ -10,24 +10,29 @@ import { Op } from 'sequelize';
 
 @Injectable()
 export class ClientService {
-  async findAll(query: ClientListDto) {
+  async findAll(req: Request, query: ClientListDto) {
+    const client_id = req['client_id'];
+    const user_id = req['user_id'];
+    const user_role_name = req['role_name'];
+
     let { limit, page } = query;
     const filterObject = {};
 
     limit = Number(limit) || 10;
     page = Number(page) || 1;
 
+    if (user_role_name !== 'Master Admin')
+      return {
+        success: true,
+        message: 'Client List Fetched Successfully!!',
+        response: { data: [], limit, page, totalItems: 0, totalPages: 0 },
+      };
+
     const totalItems = await global.DB.Client.count({
       where: filterObject,
     });
     const offset = limit * (page - 1);
     const totalPages = Math.ceil(totalItems / limit);
-
-    console.log('Page: ', page);
-    console.log('limit: ', limit);
-    console.log('totalItems: ', totalItems);
-    console.log('offset: ', offset);
-    console.log('totalPages: ', totalPages);
 
     const clients = await global.DB.Client.findAll({
       where: filterObject,
@@ -99,7 +104,7 @@ export class ClientService {
     @Req() req: Request,
     createClientDto: CreateClientUpiDto,
   ) {
-    const { upi } = createClientDto;
+    const { upi, portal_id } = createClientDto;
     let client_id = req['client_id'];
 
     if (!client_id) {
@@ -119,15 +124,26 @@ export class ClientService {
           400,
         );
     }
-    let clientUpi;
+    const portal = await global.DB.Portal.findOne({
+      where: { id: portal_id, client_id },
+    });
+    if (!portal) throw new HttpException({ message: 'No Portal Found!!' }, 404);
+
+    let clientUpi = null;
     try {
       clientUpi = await global.DB.ClientUpi.create({
+        portal_id,
         client_id,
         upi,
       });
     } catch (error) {
       if (error.name == 'SequelizeUniqueConstraintError')
         throw new HttpException({ message: 'Upi Already Exist!!' }, 400);
+      else
+        throw new HttpException(
+          { message: 'Error in creating CLient UPI!!' },
+          400,
+        );
     }
     return {
       message: 'Created successfully',
@@ -136,6 +152,7 @@ export class ClientService {
         newUpi: {
           id: clientUpi.id,
           client_id: clientUpi.client_id,
+          portal_id: clientUpi.portal_id,
           upi: clientUpi.upi,
         },
       },
@@ -144,7 +161,7 @@ export class ClientService {
 
   async updateClientUpiStatus(
     @Req() req: Request,
-    id: number,
+    client_upi_id: number,
     updateClientDto: UpdateClientUpiDto,
   ) {
     const client_id = req['client_id'];
@@ -152,7 +169,7 @@ export class ClientService {
       {
         ...updateClientDto,
       },
-      { where: { id, client_id } },
+      { where: { id: client_upi_id, client_id } },
     );
     return {
       message: 'Updated successfully',
@@ -163,16 +180,33 @@ export class ClientService {
     };
   }
 
-  async getClientList(@Req() req: Request) {
+  async getClientUpiList(@Req() req: Request) {
     const client_id = req['client_id'];
-    const list = await global.DB.ClientUpi.findAll(
-      {
-        attributes: ['id', 'upi', 'status'],
-      },
-      {
-        where: { client_id },
-      },
-    );
+    const user_id = req['user_id'];
+    const user_role_name = req['role_name'];
+
+    const filterObject: any = {};
+
+    if (user_role_name === 'Admin') filterObject.client_id = client_id;
+    else if (user_role_name === 'Portal Manager') {
+      const userPortals = await global.DB.UserPortal.findAll({
+        where: { user_id },
+        attributes: ['id', 'portal_id'],
+      });
+      filterObject.portal_id =
+        userPortals.length > 0
+          ? {
+              [Op.in]: userPortals.map((item: any) => item.portal_id),
+            }
+          : 0;
+    }
+
+    console.log(filterObject);
+
+    const list = await global.DB.ClientUpi.findAll({
+      where: filterObject,
+      attributes: ['id', 'client_id', 'portal_id', 'upi', 'status'],
+    });
     return {
       message: 'Get all client information',
       success: true,

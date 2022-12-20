@@ -5,6 +5,10 @@ import { TransactionModule } from './transaction/transaction.module';
 import { ClientModule } from './client/client.module';
 import { UserModule } from './user/user.module';
 import { RoleModule } from './role/role.module';
+import { PortalModule } from './portal/portal.module';
+import { AssignRoleModule } from './assign-role/assign-role.module';
+import { AssignUpiModule } from './assign-upi/assign-upi.module';
+import { AssignPortalModule } from './assign-portal/assign-portal.module';
 
 @Module({
   imports: [
@@ -14,6 +18,10 @@ import { RoleModule } from './role/role.module';
     ClientModule,
     UserModule,
     RoleModule,
+    PortalModule,
+    AssignRoleModule,
+    AssignUpiModule,
+    AssignPortalModule,
   ],
 })
 export class AppModule {}

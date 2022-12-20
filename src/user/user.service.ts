@@ -95,56 +95,77 @@ export class UserService {
   }
 
   async findAll(req: Request, query: UserListDto) {
-    const client_id = req['client_id'];
-    const user_id = req['user_id'];
-    const isMaster = req['isMaster'];
+    const { role_id, role_name } = query;
 
     let { limit, page } = query;
-    const filterObject = { ...(isMaster ? {} : { client_id }) };
-
     limit = Number(limit) || 10;
     page = Number(page) || 1;
 
-    const totalItems = await global.DB.User.count({
-      where: filterObject,
-    });
+    const client_id = req['client_id'];
+    const user_id = req['user_id'];
+    const user_role_name = req['role_name'];
+
+    const filterObject: any = { ...(client_id ? { client_id } : {}) };
+    const roleFilterObj: any = { ...(role_id ? { role_id } : {}) };
+
+    if (user_role_name === 'Admin') filterObject.client_id = client_id;
+    else if (user_role_name === 'Portal Manager') {
+      filterObject.client_id = client_id;
+    }
+
+    let checkRole: any;
+    if (!role_id && role_name) {
+      checkRole = await global.DB.Role.findOne({
+        where: { name: role_name },
+      });
+      if (!checkRole) {
+        throw new HttpException({ message: 'Role Name Does not Match!!' }, 404);
+      }
+      roleFilterObj.role_id = checkRole.id;
+    }
+
+    const totalItems = (
+      await global.DB.User.findAll({
+        where: filterObject,
+        attributes: ['id'],
+        include: {
+          model: global.DB.UserRole,
+          as: 'user_role_data',
+          where: roleFilterObj,
+          attributes: ['id'],
+          required: true,
+        },
+      })
+    ).length;
+
     const offset = limit * (page - 1);
     const totalPages = Math.ceil(totalItems / limit);
 
     const users = await global.DB.User.findAll({
       where: filterObject,
       attributes: { exclude: ['createdAt', 'updatedAt', 'password'] },
+      include: {
+        model: global.DB.UserRole,
+        as: 'user_role_data',
+        attributes: ['role_id'],
+        where: roleFilterObj,
+        required: true,
+        include: {
+          model: global.DB.Role,
+          as: 'role_data',
+          attributes: ['id', 'name', 'priority'],
+        },
+      },
+      // logging: true,
       limit,
       offset,
     });
-
-    const userRoles = await global.DB.UserRole.findAll({
-      where: { user_id: { [Op.in]: users.map((user: any) => user.id) } },
-      include: {
-        model: global.DB.Role,
-        as: 'role_data',
-        attributes: ['id', 'name', 'priority'],
-      },
-    });
-    const usersData = [];
-
-    for (let user of users) {
-      user = user.toJSON();
-      let tempRoles = [];
-      userRoles
-        .filter((item: any) => item.user_id == user.id)
-        .map((item: any) => {
-          tempRoles.push({ ...item.toJSON().role_data });
-        });
-      user.roles = tempRoles;
-      usersData.push(user);
-    }
 
     return {
       success: true,
       message: 'User List Fetched Successfully',
       response: {
-        data: usersData,
+        data: users,
         limit,
         page,
         totalItems,
@@ -185,206 +206,36 @@ export class UserService {
     };
   }
 
-  async addRole(req: Request, user_id: number, updateUserDto: UpdateUserDto) {
-    const { roles } = updateUserDto;
-    const guard_user_id = req['user_id'];
-
-    // Validate Roles
-    if (roles.length <= 0)
-      throw new HttpException({ message: 'Roles are Invalid: Empty!!' }, 400);
-
-    const checkRoles = await global.DB.Role.findAll({
-      where: { id: { [Op.in]: roles } },
+  async findSelfUser(req: Request) {
+    const user_id = req['user_id'];
+    const user = await global.DB.User.findOne({
+      where: { id: user_id },
+      attributes: { exclude: ['createdAt', 'updatedAt', 'password'] },
     });
-    if (checkRoles.length !== roles.length)
-      throw new HttpException({ message: 'Roles are Invalid' }, 400);
 
-    // Validate User Role and Guard Role
-    const guardUserRoles = await global.DB.UserRole.findAll({
-      where: { user_id: guard_user_id },
+    if (!user)
+      throw new HttpException({ message: 'No User found with this Id!!' }, 401);
+
+    const userRoles = await global.DB.UserRole.findAll({
+      where: { user_id: user.id },
       include: {
         model: global.DB.Role,
         as: 'role_data',
         attributes: ['id', 'name', 'priority'],
       },
     });
-    let maxGuardUserRole = guardUserRoles[0];
-    for (let guard_role of guardUserRoles) {
-      if (guard_role.role_data.priority > maxGuardUserRole.role_data.priority)
-        maxGuardUserRole = guard_role;
-    }
 
-    for (let role of checkRoles) {
-      if (maxGuardUserRole.role_data.priority <= role.priority)
-        throw new HttpException(
-          { message: 'You can not create user above your Role!!' },
-          400,
-        );
-    }
-
-    const user = await global.DB.User.findOne({ where: { id: user_id } });
-    if (!user)
-      throw new HttpException(
-        { message: 'No User Found with the Given Id!!' },
-        404,
-      );
-
-    const userRoles = await global.DB.UserRole.findAll({ where: { user_id } });
-    const userRolesArr = userRoles.map((item: any) => item.role_id);
-
-    const rolesToAdd = [];
-
-    for (let role of roles) {
-      if (!userRolesArr.includes(role)) rolesToAdd.push(role);
-    }
-
-    if (rolesToAdd.length <= 0)
-      return { message: 'Roles Already Exists on User!!' };
-    const data = rolesToAdd.map((item) => {
-      return { user_id, role_id: item };
+    let tempRoles = [];
+    userRoles.map((item: any) => {
+      tempRoles.push({ ...item.toJSON().role_data });
     });
-    // console.log('Data:', data);
-    const rolesAdded = await global.DB.UserRole.bulkCreate(data);
-
-    return { success: true, message: 'User Role updated Successfully!!' };
-  }
-
-  async removeRole(
-    req: Request,
-    user_id: number,
-    updateUserDto: UpdateUserDto,
-  ) {
-    const { roles } = updateUserDto;
-
-    if (roles.length <= 0)
-      throw new HttpException({ message: 'Roles are Invalid: Empty!!' }, 400);
-
-    const user = await global.DB.User.findOne({ where: { id: user_id } });
-    if (!user)
-      throw new HttpException(
-        { message: 'No User Found with the Given Id!!' },
-        404,
-      );
-
-    const userRoles = await global.DB.UserRole.findAll({ where: { user_id } });
-    if (userRoles.length < 2)
-      throw new HttpException(
-        { message: 'At Least One Role is Required' },
-        401,
-      );
-
-    await global.DB.UserRole.destroy({
-      where: { user_id, role_id: { [Op.in]: roles } },
-    });
-
-    return { success: true, message: 'Roles Deleted Successfully!!' };
-  }
-
-  async findAllUserUpi(req: Request) {
-    const user = await global.DB.User.findAll({
-      attributes: ['id', 'first_name', 'last_name', 'email'],
-
-      include: {
-        model: global.DB.UserUpi,
-        as: 'user_upi_data',
-        attributes: ['id', 'user_id', 'client_upi_id', 'status', 'created_at'],
-        include: {
-          model: global.DB.ClientUpi,
-          as: 'client_upi_data',
-          attributes: ['id', 'upi', 'client_id', 'status'],
-        },
-      },
-    });
-    return {
-      message: 'User Upis Fetched successfully',
-      response: { data: user },
-      success: true,
-    };
-  }
-
-  async updateUpi(
-    req: Request,
-    user_id: number,
-    updateUserUpiDto: UpdateUserUpiDto,
-  ) {
-    const { upis } = updateUserUpiDto;
-
-    const find_userUpi = await global.DB.ClientUpi.findAll({
-      where: { id: { [Op.in]: upis } },
-    });
-    if (!find_userUpi || find_userUpi.length != upis.length) {
-      throw new HttpException('Client UPI Id is not Valid!!', 401);
-    }
-
-    const client_upi_permission = await global.DB.UserUpi.findAll({
-      where: { user_id },
-      attributes: ['id', 'user_id', 'client_upi_id'],
-    });
-
-    let exist_upi = client_upi_permission;
-    let upisToAdd = [...upis];
-    for (let i = 0; i < exist_upi.length; i++) {
-      for (let j = 0; j < upis.length; j++) {
-        if (exist_upi[i].client_upi_id == upis[j]) {
-          upisToAdd.splice(upisToAdd.indexOf(upis[j]), 1);
-        }
-      }
-    }
-    //console.log(upisToAdd,);
-    for (let i = 0; i < upisToAdd.length; i++) {
-      const user = await global.DB.UserUpi.create({
-        user_id: user_id,
-        client_upi_id: upisToAdd[i],
-      });
-    }
-    return {
-      message: 'Upis added successfully',
-      success: true,
-    };
-  }
-
-  // async removeUpi(
-  //   req: Request,
-  //   user_id: number,
-  //   updateUserUpiDto: UpdateUserUpiDto,
-  // ) {
-  //   const { upis } = updateUserUpiDto;
-  //   console.log(upis);
-  //   const find_clientUpi = await global.DB.ClientUpi.findAll({
-  //     where: { id: { [Op.in]: upis } },
-  //   });
-
-  //   if (find_clientUpi.length < upis.length) {
-  //     throw new HttpException('Client UPI id is out of range ', 401);
-  //   }
-  //   const find_userUpi = await global.DB.UserUpi.findAll({
-  //     where: { user_id },
-  //     attributes: ['id', 'user_id', 'client_upi_id'],
-  //   });
-
-  //   let upisToDelete = [...upis];
-
-  //   const upis_delete = await global.DB.UserUpi.destroy({
-  //     where: {
-  //       user_id: user_id,
-  //       client_upi_id: upisToDelete,
-  //     },
-  //   });
-
-  //   return {
-  //     message: ' Deleted successfully',
-  //     success: true,
-  //   };
-  // }
-  async removeUpi(id: number) {
-    const upis_delete = await global.DB.UserUpi.destroy({
-      where: { id },
-    });
+    const userData = user.toJSON();
+    userData.roles = tempRoles;
 
     return {
-      message: ' Deleted successfully',
       success: true,
-      response: {},
+      message: 'User Fetched Successfully',
+      response: { data: userData },
     };
   }
 

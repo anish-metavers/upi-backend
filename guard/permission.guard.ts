@@ -14,8 +14,12 @@ export class PermissionGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req: Request = context.switchToHttp().getRequest();
 
-    console.log('Path:', req.route.path);
-    console.log('Method:', Object.keys(req.route.methods)[0]);
+    console.log(
+      'Path:',
+      req.route.path,
+      'Method:',
+      Object.keys(req.route.methods)[0],
+    );
 
     const user_id = req['user_id'];
     if (!user_id) {
@@ -42,24 +46,31 @@ export class PermissionGuard implements CanActivate {
         },
       }),
     ]);
-    // console.log('Permission: ' + permission);
 
     if (!permission)
       throw new HttpException('No permission found with this route', 404);
 
     const roleIdsArr = userRoles.map((role) => role.role_id);
 
-    const rolePermission = await global.DB.RolePermission.findOne({
-      where: {
-        permission_id: permission.id,
-        role_id: {
-          [Op.in]: roleIdsArr,
+    const [rolePermission, role] = await Promise.all([
+      global.DB.RolePermission.findOne({
+        where: {
+          permission_id: permission.id,
+          role_id: {
+            [Op.in]: roleIdsArr,
+          },
         },
-      },
-    });
+      }),
+      global.DB.Role.findOne({
+        where: { id: roleIdsArr[0] },
+      }),
+    ]);
 
     if (!rolePermission)
       throw new HttpException('Invalid permissions found', 401);
+
+    req['role_ids'] = roleIdsArr;
+    req['role_name'] = role.name;
 
     return true;
   }

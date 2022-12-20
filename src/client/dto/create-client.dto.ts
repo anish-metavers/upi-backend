@@ -5,6 +5,9 @@ export class CreateClientUpiDto {
   upi: string;
 
   client_id: string | number;
+
+  @IsNotEmpty()
+  portal_id: string | number;
 }
 
 export class CreateClientDto {

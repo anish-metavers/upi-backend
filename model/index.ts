@@ -9,6 +9,8 @@ import RolePermission from './rolePermission';
 import UserRole from './userRoles';
 import User from './user';
 import UserUpi from './userUpi';
+import Portal from './portal';
+import UserPortal from './userPortal';
 
 const DATABASE = async () => {
   const sequelize = new Sequelize(
@@ -29,9 +31,7 @@ const DATABASE = async () => {
 
   try {
     await sequelize.authenticate();
-    console.log(
-      'Database connection established successfully!!........................................',
-    );
+    console.log('--------MySQL DB Connected Successfully--------');
     const db = {
       sequelize: sequelize,
       Transaction: Transaction(sequelize),
@@ -44,6 +44,8 @@ const DATABASE = async () => {
       UserRole: UserRole(sequelize),
       User: User(sequelize),
       UserUpi: UserUpi(sequelize),
+      Portal: Portal(sequelize),
+      UserPortal: UserPortal(sequelize),
     };
 
     // Setting the association of model
@@ -57,7 +59,7 @@ const DATABASE = async () => {
 
     global.DB = db;
   } catch (error) {
-    console.error('Unable to connect to database!!!!!!!!!!!!!!!!!!!!!!', error);
+    console.error('--------Error in Connecting to MySQL DB--------', error);
   }
 };
 
