@@ -9,6 +9,7 @@ import { PortalModule } from './portal/portal.module';
 import { AssignRoleModule } from './assign-role/assign-role.module';
 import { AssignUpiModule } from './assign-upi/assign-upi.module';
 import { AssignPortalModule } from './assign-portal/assign-portal.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AssignPortalModule } from './assign-portal/assign-portal.module';
     AssignRoleModule,
     AssignUpiModule,
     AssignPortalModule,
+    DashboardModule,
   ],
 })
 export class AppModule {}

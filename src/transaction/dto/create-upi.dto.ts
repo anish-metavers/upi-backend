@@ -17,6 +17,10 @@ export class CreateUpiDto {
 export class TransactionListFilterDto {
   utr: string;
 
+  client_id: number;
+
+  portal_id: number;
+
   client_upi_id: number;
 
   user_upi: string;
