@@ -93,7 +93,11 @@ export class AssignRoleService {
 
     await Promise.all([
       global.DB.UserRole.destroy({ where: { user_id } }),
-      global.DB.UserRole.create({ user_id, role_id: roles[0] }),
+      global.DB.UserRole.create({
+        user_id,
+        role_id: roles[0],
+        created_by: req['user_id'],
+      }),
     ]);
 
     return { success: true, message: 'Roles Replaced Successfully!!' };

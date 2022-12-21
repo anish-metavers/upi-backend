@@ -90,6 +90,7 @@ export class AssignPortalService {
       userPortal = await global.DB.UserPortal.create({
         user_id,
         portal_id,
+        created_by: req['user_id'],
       });
     } catch (error) {
       if (error.name == 'SequelizeUniqueConstraintError')

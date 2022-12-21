@@ -76,6 +76,7 @@ export class UserService {
       email: email.toLowerCase(),
       password: hashedPassword,
       client_id: CLIENT_ID,
+      created_by: req['user_id'],
     });
 
     // Create Roles
