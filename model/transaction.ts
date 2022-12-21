@@ -1,6 +1,24 @@
 import { Model, Sequelize, DataTypes } from 'sequelize';
 
-class Transaction extends Model {}
+class Transaction extends Model {
+  static associate(models: any) {
+    this.belongsTo(models.Client, {
+      as: 'client_data',
+      foreignKey: 'client_id',
+      targetKey: 'id',
+    });
+    this.belongsTo(models.Portal, {
+      as: 'portal_data',
+      foreignKey: 'portal_id',
+      targetKey: 'id',
+    });
+    this.belongsTo(models.ClientUpi, {
+      as: 'client_upi_data',
+      foreignKey: 'client_upi_id',
+      targetKey: 'id',
+    });
+  }
+}
 
 const model = (sequelize: Sequelize) => {
   Transaction.init(

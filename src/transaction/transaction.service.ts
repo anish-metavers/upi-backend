@@ -20,6 +20,8 @@ export class TransactionService {
   ) {
     const {
       utr,
+      client_id: client_id_filter,
+      portal_id,
       client_upi_id,
       user_upi,
       order_id,
@@ -86,6 +88,8 @@ export class TransactionService {
     if (note) filterObject.note = { [Op.like]: `%${note}%` };
     if (status) filterObject.status = status;
     if (client_upi_id) filterObject.client_upi_id = client_upi_id;
+    if (client_id_filter) filterObject.client_id = client_id_filter;
+    if (portal_id) filterObject.portal_id = portal_id;
     if (order_id) filterObject.order_id = order_id;
     if (amount_start && amount_end)
       filterObject.amount = { [Op.between]: [amount_start, amount_end] };

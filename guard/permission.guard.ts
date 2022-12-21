@@ -66,6 +66,10 @@ export class PermissionGuard implements CanActivate {
       }),
     ]);
 
+    // const role = await global.DB.Role.findOne({
+    //   where: { id: roleIdsArr[0] },
+    // });
+
     if (!rolePermission)
       throw new HttpException('Invalid permissions found', 401);
 

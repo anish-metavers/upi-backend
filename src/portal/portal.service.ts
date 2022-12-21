@@ -41,16 +41,26 @@ export class PortalService {
 
     const client_id = req['client_id'];
 
-    // const user_id = req['user_id'];
-    // const user_role_name = req['role_name'];
-    // const client_id = req['client_id'] || query.client_id;
-    // if (user_role_name === 'Admin')
+    const user_id = req['user_id'];
+    const user_role_name = req['role_name'];
 
-    filterObject.client_id = client_id;
+    if (user_role_name != 'Master Admin') filterObject.client_id = client_id;
 
     const portals = await global.DB.Portal.findAll({
       where: filterObject,
       attributes: { exclude: ['createdAt', 'updatedAt'] },
+      include: [
+        {
+          model: global.DB.Client,
+          as: 'client_data',
+          attributes: ['id', 'name'],
+        },
+        {
+          model: global.DB.User,
+          as: 'created_by_data',
+          attributes: ['id', 'first_name', 'last_name'],
+        },
+      ],
     });
 
     return {
@@ -75,6 +85,18 @@ export class PortalService {
         id: portal_id,
       },
       attributes: { exclude: ['createdAt', 'updatedAt'] },
+      include: [
+        {
+          model: global.DB.Client,
+          as: 'client_data',
+          attributes: ['id', 'name'],
+        },
+        {
+          model: global.DB.User,
+          as: 'created_by_data',
+          attributes: ['id', 'first_name', 'last_name'],
+        },
+      ],
     });
 
     if (!portal)
