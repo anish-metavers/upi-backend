@@ -39,6 +39,7 @@ export class AssignUpiService {
       const user = await global.DB.UserUpi.create({
         user_id: user_id,
         client_upi_id: upisToAdd[i],
+        created_by:req['user_id'],
       });
     }
     return {

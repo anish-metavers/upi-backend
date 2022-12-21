@@ -32,16 +32,24 @@ export class ClientController {
   }
 
   @Post()
-  async createClient(@Body() createClientDto: CreateClientDto) {
-    return await this.clientService.createClient(createClientDto);
+  async createClient(
+    @Req() req: Request,
+    @Body() createClientDto: CreateClientDto,
+  ): Promise<{
+    success: boolean;
+    response: { data: { id: any; name: any; email: any } };
+    message: string;
+  }> {
+    return await this.clientService.createClient(createClientDto, req);
   }
 
   @Patch(':client_id')
   update(
+    @Req() req: Request,
     @Param('client_id') client_id: string,
     @Body() updateClientDto: UpdateClientDto,
   ) {
-    return this.clientService.updateClient(+client_id, updateClientDto);
+    return this.clientService.updateClient(req, +client_id, updateClientDto);
   }
 
   @Post('/upi/create')

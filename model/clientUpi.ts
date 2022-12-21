@@ -30,6 +30,14 @@ const model = (sequelize: Sequelize) => {
         allowNull: false,
         defaultValue: '1',
       },
+      created_by: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      updated_by: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
       createdAt: {
         type: DataTypes.DATE,
         field: 'created_at',

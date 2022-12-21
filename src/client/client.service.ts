@@ -48,7 +48,7 @@ export class ClientService {
     };
   }
 
-  async createClient(createClientDto: CreateClientDto) {
+  async createClient(createClientDto: CreateClientDto, req: Request) {
     const { name, email } = createClientDto;
 
     const checkClient = await global.DB.Client.findOne({
@@ -62,6 +62,7 @@ export class ClientService {
     const client = await global.DB.Client.create({
       name,
       email: email.toLowerCase(),
+      created_by: req['user_id'],
     });
 
     return {
@@ -77,7 +78,11 @@ export class ClientService {
     };
   }
 
-  async updateClient(client_id: number, updateClientDto: UpdateClientDto) {
+  async updateClient(
+    req: Request,
+    client_id: number,
+    updateClientDto: UpdateClientDto,
+  ) {
     const { name, email } = updateClientDto;
     const client = await global.DB.Client.findOne({
       where: { id: client_id },
@@ -96,7 +101,10 @@ export class ClientService {
         );
     }
 
-    await client.update({ ...updateClientDto });
+    await client.update({
+      ...updateClientDto,
+      updated_by: req['user_id'],
+    });
     return { success: true, message: 'Client Updated Successfully!!' };
   }
 
@@ -135,6 +143,7 @@ export class ClientService {
         portal_id,
         client_id,
         upi,
+        created_by: req['user_id'],
       });
     } catch (error) {
       if (error.name == 'SequelizeUniqueConstraintError')
@@ -168,6 +177,7 @@ export class ClientService {
     const updateClient = await global.DB.ClientUpi.update(
       {
         ...updateClientDto,
+        updated_by: req['user_id'],
       },
       { where: { id: client_upi_id } },
     );
