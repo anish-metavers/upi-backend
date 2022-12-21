@@ -15,9 +15,10 @@ import { CreatePortalDto, PortalFindDto } from './dto/create-portal.dto';
 import { UpdatePortalDto } from './dto/update-portal.dto';
 import { AuthGuard } from 'guard/auth.guard';
 import { Request } from 'express';
+import { PermissionGuard } from 'guard/permission.guard';
 
 @Controller('portal')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PermissionGuard)
 export class PortalController {
   constructor(private readonly portalService: PortalService) {}
 

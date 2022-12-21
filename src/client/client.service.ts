@@ -164,12 +164,12 @@ export class ClientService {
     client_upi_id: number,
     updateClientDto: UpdateClientUpiDto,
   ) {
-    const client_id = req['client_id'];
+    // const client_id = req['client_id'];
     const updateClient = await global.DB.ClientUpi.update(
       {
         ...updateClientDto,
       },
-      { where: { id: client_upi_id, client_id } },
+      { where: { id: client_upi_id } },
     );
     return {
       message: 'Updated successfully',

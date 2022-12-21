@@ -1,6 +1,20 @@
 import { Model, Sequelize, DataTypes } from 'sequelize';
 
-class Portal extends Model {}
+class Portal extends Model {
+  static associate(models: any) {
+    this.belongsTo(models.Client, {
+      as: 'client_data',
+      foreignKey: 'client_id',
+      targetKey: 'id',
+    });
+
+    this.belongsTo(models.User, {
+      as: 'created_by_data',
+      foreignKey: 'created_by',
+      targetKey: 'id',
+    });
+  }
+}
 
 const model = (sequelize: Sequelize) => {
   Portal.init(
