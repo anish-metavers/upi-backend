@@ -36,6 +36,10 @@ const model = (sequelize: Sequelize) => {
         type: DataTypes.ENUM('ACTIVE', 'INACTIVE'),
         defaultValue: 'ACTIVE',
       },
+      created_by: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
       createdAt: {
         type: DataTypes.DATE,
         field: 'created_at',

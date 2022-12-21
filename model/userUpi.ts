@@ -35,6 +35,10 @@ const model = (sequelize: Sequelize) => {
       status: {
         type: DataTypes.ENUM('ACTIVE', 'INACTIVE'),
       },
+      created_by: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
       createdAt: {
         type: DataTypes.DATE,
         field: 'created_at',

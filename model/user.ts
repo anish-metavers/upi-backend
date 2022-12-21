@@ -108,6 +108,14 @@ const model = (sequelize: Sequelize) => {
       //   type: DataTypes.STRING,
       //   defaultValue: 'en',
       // },
+      created_by: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      updated_by: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
       createdAt: {
         type: DataTypes.DATE,
         field: 'created_at',
