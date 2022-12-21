@@ -1,5 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Request } from 'express';
+import { PAGINATION } from 'utils/config';
 import { AssignPortalDto, UserPortalQueryDto } from './dto/assignPortal.dto';
 
 @Injectable()
@@ -9,8 +10,8 @@ export class AssignPortalService {
 
     let { limit, page } = query;
 
-    limit = Number(limit) || 10;
-    page = Number(page) || 1;
+    limit = Number(limit) || PAGINATION.LIMIT;
+    page = Number(page) || PAGINATION.PAGE;
 
     const filterObj = {
       ...(user_id ? { id: user_id } : {}),

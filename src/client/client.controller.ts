@@ -13,6 +13,7 @@ import {
 import { ClientService } from './client.service';
 import {
   ClientListDto,
+  ClientUpiListDto,
   CreateClientDto,
   CreateClientUpiDto,
 } from './dto/create-client.dto';
@@ -75,8 +76,11 @@ export class ClientController {
   }
 
   @Get('/upi/list')
-  async getClientUpiList(@Req() req: Request) {
-    const clientList = await this.clientService.getClientUpiList(req);
+  async getClientUpiList(
+    @Req() req: Request,
+    @Query() query: ClientUpiListDto,
+  ) {
+    const clientList = await this.clientService.getClientUpiList(req, query);
     return clientList;
   }
 }

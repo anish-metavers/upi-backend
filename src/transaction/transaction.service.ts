@@ -2,6 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { Op } from 'sequelize';
 import { ThirdPartyService } from 'src/third-party/third-party.service';
+import { PAGINATION } from 'utils/config';
 import { TransactionListFilterDto } from './dto/create-upi.dto';
 import {
   InitTransactionDTO,
@@ -39,8 +40,8 @@ export class TransactionService {
 
     let { limit, page } = transactionListQuery;
 
-    limit = Number(limit) || 10;
-    page = Number(page) || 1;
+    limit = Number(limit) || PAGINATION.LIMIT;
+    page = Number(page) || PAGINATION.PAGE;
 
     const client_id = req['client_id'];
     const user_id = req['user_id'];

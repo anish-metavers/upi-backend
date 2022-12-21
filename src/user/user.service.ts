@@ -6,6 +6,7 @@ import { Op } from 'sequelize';
 import Role from 'model/role';
 import { Request } from 'express';
 import { User } from 'model/user';
+import { PAGINATION } from 'utils/config';
 @Injectable()
 export class UserService {
   async create(req: Request, createUserDto: CreateUserDto) {
@@ -99,8 +100,9 @@ export class UserService {
     const { role_id, role_name } = query;
 
     let { limit, page } = query;
-    limit = Number(limit) || 10;
-    page = Number(page) || 1;
+
+    limit = Number(limit) || PAGINATION.LIMIT;
+    page = Number(page) || PAGINATION.PAGE;
 
     const client_id = req['client_id'];
     const user_id = req['user_id'];

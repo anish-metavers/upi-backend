@@ -14,7 +14,7 @@ import { AuthGuard } from 'guard/auth.guard';
 import { PermissionGuard } from 'guard/permission.guard';
 import { AssignUpiService } from './assign-upi.service';
 import { Request } from 'express';
-import { AssignUpiDto } from './dto/assignUpi.dto';
+import { AssignUpiDto, AssignUpiListDto } from './dto/assignUpi.dto';
 
 @Controller('assign-upi')
 @UseGuards(AuthGuard)
@@ -39,7 +39,7 @@ export class AssignUpiController {
   }
 
   @Get()
-  async findAllUserUpi(@Req() req: Request) {
-    return await this.assignUpiService.findAllUserUpi(req);
+  async findAllUserUpi(@Req() req: Request, @Query() query: AssignUpiListDto) {
+    return await this.assignUpiService.findAllUserUpi(req, query);
   }
 }

@@ -1,12 +1,14 @@
 import { HttpException, Injectable, Req } from '@nestjs/common';
 import {
   ClientListDto,
+  ClientUpiListDto,
   CreateClientDto,
   CreateClientUpiDto,
 } from './dto/create-client.dto';
 import { UpdateClientDto, UpdateClientUpiDto } from './dto/update-client.dto';
 import { Request } from 'express';
 import { Op } from 'sequelize';
+import { PAGINATION } from 'utils/config';
 
 @Injectable()
 export class ClientService {
@@ -18,8 +20,8 @@ export class ClientService {
     let { limit, page } = query;
     const filterObject = {};
 
-    limit = Number(limit) || 10;
-    page = Number(page) || 1;
+    limit = Number(limit) || PAGINATION.LIMIT;
+    page = Number(page) || PAGINATION.PAGE;
 
     if (user_role_name !== 'Master Admin')
       return {
@@ -190,7 +192,12 @@ export class ClientService {
     };
   }
 
-  async getClientUpiList(@Req() req: Request) {
+  async getClientUpiList(@Req() req: Request, query: ClientUpiListDto) {
+    let { limit, page } = query;
+
+    limit = Number(limit) || PAGINATION.LIMIT;
+    page = Number(page) || PAGINATION.PAGE;
+
     const client_id = req['client_id'];
     const user_id = req['user_id'];
     const user_role_name = req['role_name'];
@@ -211,16 +218,22 @@ export class ClientService {
           : 0;
     }
 
-    console.log(filterObject);
+    const totalItems = await global.DB.ClientUpi.count({
+      where: filterObject,
+    });
+    const offset = limit * (page - 1);
+    const totalPages = Math.ceil(totalItems / limit);
 
     const list = await global.DB.ClientUpi.findAll({
       where: filterObject,
       attributes: ['id', 'client_id', 'portal_id', 'upi', 'status'],
+      limit,
+      offset,
     });
     return {
       message: 'Get all client information',
       success: true,
-      response: { list },
+      response: { list, limit, page, totalItems, totalPages },
     };
   }
 }

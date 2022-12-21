@@ -24,3 +24,9 @@ export class ClientListDto {
 
   limit: number;
 }
+
+export class ClientUpiListDto {
+  page: number;
+
+  limit: number;
+}

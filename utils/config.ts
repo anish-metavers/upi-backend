@@ -150,3 +150,8 @@ export const ROULETTE_GAME_OPTIONS_NON_DECLARABLE = {
   ['Four Way']: 4,
   ['Six Way']: 6,
 };
+
+export const PAGINATION = {
+  LIMIT: 10,
+  PAGE: 1,
+};

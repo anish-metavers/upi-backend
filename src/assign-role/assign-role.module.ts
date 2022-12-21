@@ -4,6 +4,6 @@ import { AssignRoleController } from './assign-role.controller';
 
 @Module({
   controllers: [AssignRoleController],
-  providers: [AssignRoleService]
+  providers: [AssignRoleService],
 })
 export class AssignRoleModule {}

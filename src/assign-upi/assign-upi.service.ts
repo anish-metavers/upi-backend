@@ -1,7 +1,8 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { Op } from 'sequelize';
-import { AssignUpiDto } from './dto/assignUpi.dto';
+import { PAGINATION } from 'utils/config';
+import { AssignUpiDto, AssignUpiListDto } from './dto/assignUpi.dto';
 
 @Injectable()
 export class AssignUpiService {
@@ -39,7 +40,7 @@ export class AssignUpiService {
       const user = await global.DB.UserUpi.create({
         user_id: user_id,
         client_upi_id: upisToAdd[i],
-        created_by:req['user_id'],
+        created_by: req['user_id'],
       });
     }
     return {
@@ -60,25 +61,53 @@ export class AssignUpiService {
     };
   }
 
-  async findAllUserUpi(req: Request) {
-    const user = await global.DB.User.findAll({
-      attributes: ['id', 'first_name', 'last_name', 'email'],
-      include: {
-        model: global.DB.UserUpi,
-        as: 'user_upi_data',
-        attributes: ['id', 'user_id', 'client_upi_id', 'status', 'created_at'],
-        required: true,
-        include: {
+  async findAllUserUpi(req: Request, query: AssignUpiListDto) {
+    const filterObject: any = {};
+    let { limit, page } = query;
+
+    limit = Number(limit) || PAGINATION.LIMIT;
+    page = Number(page) || PAGINATION.PAGE;
+
+    const totalItems = (
+      await global.DB.UserUpi.findAll({
+        where: filterObject,
+        attributes: ['id'],
+        include: [
+          {
+            model: global.DB.ClientUpi,
+            as: 'client_upi_data',
+            attributes: ['id'],
+            required: true,
+          },
+        ],
+      })
+    ).length;
+
+    const offset = limit * (page - 1);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const userUpi = await global.DB.UserUpi.findAll({
+      where: filterObject,
+      attributes: ['id', 'user_id', 'client_upi_id', 'status', 'created_at'],
+      include: [
+        {
           model: global.DB.ClientUpi,
           as: 'client_upi_data',
-          attributes: ['id', 'upi', 'client_id', 'status'],
+          attributes: ['id', 'upi', 'client_id', 'portal_id', 'status'],
         },
-      },
+        {
+          model: global.DB.User,
+          as: 'user_data',
+          attributes: ['id', 'first_name', 'last_name'],
+        },
+      ],
+      limit,
+      offset,
     });
     return {
-      message: 'User Upis Fetched successfully',
-      response: { data: user },
       success: true,
+      message: 'User Upis Fetched successfully',
+      response: { data: userUpi, limit, page, totalItems, totalPages },
     };
   }
 }

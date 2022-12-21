@@ -15,4 +15,7 @@ export class CreatePortalDto {
 
 export class PortalFindDto {
   client_id: string | number;
+
+  limit: number;
+  page: number;
 }

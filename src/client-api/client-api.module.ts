@@ -4,6 +4,6 @@ import { ClientApiController } from './client-api.controller';
 
 @Module({
   controllers: [ClientApiController],
-  providers: [ClientApiService]
+  providers: [ClientApiService],
 })
 export class ClientApiModule {}
