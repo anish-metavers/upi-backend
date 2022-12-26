@@ -17,14 +17,9 @@ export class ClientApiController {
 
   @Post()
   create(@Body() createClientApiDto: CreateClientApiDto) {
-    return this.clientApiService.create(createClientApiDto);
+    const data = this.clientApiService.create(createClientApiDto);
+    return data;
   }
-
-  @Get()
-  findAll() {
-    return this.clientApiService.findAll();
-  }
-
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.clientApiService.findOne(+id);
@@ -36,10 +31,5 @@ export class ClientApiController {
     @Body() updateClientApiDto: UpdateClientApiDto,
   ) {
     return this.clientApiService.update(+id, updateClientApiDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.clientApiService.remove(+id);
   }
 }
