@@ -86,7 +86,7 @@ export class AssignPortalService {
         401,
       );
 
-    let userPortal;
+    let userPortal = null;
     try {
       userPortal = await global.DB.UserPortal.create({
         user_id,
