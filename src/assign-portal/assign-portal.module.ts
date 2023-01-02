@@ -4,6 +4,6 @@ import { AssignPortalController } from './assign-portal.controller';
 
 @Module({
   controllers: [AssignPortalController],
-  providers: [AssignPortalService]
+  providers: [AssignPortalService],
 })
 export class AssignPortalModule {}

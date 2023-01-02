@@ -43,7 +43,7 @@ const model = (sequelize: any) => {
       },
       updated_by: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        defaultValue: 0,
       },
       createdAt: {
         type: DataTypes.DATE,

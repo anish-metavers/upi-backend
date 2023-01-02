@@ -14,7 +14,7 @@ import { AuthGuard } from 'guard/auth.guard';
 import { PermissionGuard } from 'guard/permission.guard';
 import { AssignUpiService } from './assign-upi.service';
 import { Request } from 'express';
-import { AssignUpiDto } from './dto/assignUpi.dto';
+import { AssignUpiDto, AssignUpiListDto } from './dto/assignUpi.dto';
 
 @Controller('assign-upi')
 @UseGuards(AuthGuard)
@@ -22,12 +22,12 @@ export class AssignUpiController {
   constructor(private readonly assignUpiService: AssignUpiService) {}
 
   @Post(':user_id')
-  async updateUpi(
+  async assignUpi(
     @Req() req: Request,
     @Param('user_id') user_id: string,
     @Body() body: AssignUpiDto,
   ) {
-    return await this.assignUpiService.updateUpi(req, +user_id, body);
+    return await this.assignUpiService.assignUpi(req, +user_id, body);
   }
 
   @Delete(':user_upi_id')
@@ -39,7 +39,7 @@ export class AssignUpiController {
   }
 
   @Get()
-  async findAllUserUpi(@Req() req: Request) {
-    return await this.assignUpiService.findAllUserUpi(req);
+  async findAllUserUpi(@Req() req: Request, @Query() query: AssignUpiListDto) {
+    return await this.assignUpiService.findAllUserUpi(req, query);
   }
 }

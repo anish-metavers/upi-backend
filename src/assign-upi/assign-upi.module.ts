@@ -4,6 +4,6 @@ import { AssignUpiController } from './assign-upi.controller';
 
 @Module({
   controllers: [AssignUpiController],
-  providers: [AssignUpiService]
+  providers: [AssignUpiService],
 })
 export class AssignUpiModule {}

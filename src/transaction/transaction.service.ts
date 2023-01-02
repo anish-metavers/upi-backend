@@ -2,6 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { Op } from 'sequelize';
 import { ThirdPartyService } from 'src/third-party/third-party.service';
+import { PAGINATION } from 'utils/config';
 import { TransactionListFilterDto } from './dto/create-upi.dto';
 import {
   InitTransactionDTO,
@@ -39,8 +40,8 @@ export class TransactionService {
 
     let { limit, page } = transactionListQuery;
 
-    limit = Number(limit) || 10;
-    page = Number(page) || 1;
+    limit = Number(limit) || PAGINATION.LIMIT;
+    page = Number(page) || PAGINATION.PAGE;
 
     const client_id = req['client_id'];
     const user_id = req['user_id'];
@@ -258,11 +259,8 @@ export class TransactionService {
       user_upi,
       end_at,
     });
-
-    return {
-      message: 'Updated successfully',
-      data: transaction,
-    };
+    await transaction.reload();
+    return transaction;
   }
 
   async updateUtr(id: number, verifyUtrDto: VerifyUtrDto) {
@@ -290,11 +288,13 @@ export class TransactionService {
 
     if (!ApiRes.response.success)
       throw new HttpException('Client API Error', 400);
+    await transaction.reload();
 
     return {
       statusCode: 201,
       success: true,
       message: 'Utr updated successfully',
+      response: { data: transaction },
     };
   }
 
@@ -328,8 +328,14 @@ export class TransactionService {
     });
     if (!ApiRes.response.success)
       throw new HttpException('Client API Error', 400);
-    else await transaction.update({ status });
-
+    else
+      await transaction.update({
+        status,
+        ...(status == 'COMPLETED' || status == 'FAILED'
+          ? { verify_timestamp: new Date() }
+          : {}),
+      });
+    await transaction.reload();
     return transaction;
   }
 }

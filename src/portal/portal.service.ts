@@ -1,5 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Request } from 'express';
+import { PAGINATION } from 'utils/config';
 import { CreatePortalDto, PortalFindDto } from './dto/create-portal.dto';
 import { UpdatePortalDto } from './dto/update-portal.dto';
 
@@ -13,6 +14,14 @@ export class PortalService {
         { message: 'Client Id is required for Master Admin!!' },
         401,
       );
+
+    if (!req['client_id'] && createPortalDto.client_id) {
+      const client = await global.DB.Client.findOne({
+        where: { id: createPortalDto.client_id },
+      });
+      if (!client)
+        throw new HttpException({ message: 'Client Not Found!' }, 404);
+    }
     let portal;
     try {
       portal = await global.DB.Portal.create({
@@ -28,7 +37,7 @@ export class PortalService {
       else
         throw new HttpException({ message: 'Error in Creating Portal!!' }, 500);
     }
-
+    await portal.reload();
     return {
       success: true,
       message: 'Portal created successfully',
@@ -39,12 +48,22 @@ export class PortalService {
   async findAll(req: Request, query: PortalFindDto) {
     const filterObject: any = {};
 
-    const client_id = req['client_id'];
+    let { limit, page } = query;
 
+    limit = Number(limit) || PAGINATION.LIMIT;
+    page = Number(page) || PAGINATION.PAGE;
+
+    const client_id = req['client_id'];
     const user_id = req['user_id'];
     const user_role_name = req['role_name'];
 
     if (user_role_name != 'Master Admin') filterObject.client_id = client_id;
+
+    const totalItems = await global.DB.Portal.count({
+      where: filterObject,
+    });
+    const offset = limit * (page - 1);
+    const totalPages = Math.ceil(totalItems / limit);
 
     const portals = await global.DB.Portal.findAll({
       where: filterObject,
@@ -61,12 +80,14 @@ export class PortalService {
           attributes: ['id', 'first_name', 'last_name'],
         },
       ],
+      limit,
+      offset,
     });
 
     return {
       success: true,
       message: 'Portal Fetched successfully',
-      response: { data: portals },
+      response: { data: portals, limit, page, totalItems, totalPages },
     };
   }
 
@@ -149,7 +170,8 @@ export class PortalService {
       console.log(error);
       if (error.name == 'SequelizeUniqueConstraintError')
         throw new HttpException({ message: 'Domain Already in Use!!' }, 401);
-      else throw new HttpException({ message: 'Error in  Portal!!' }, 500);
+      else
+        throw new HttpException({ message: 'Error in Updating Portal!!' }, 400);
     }
 
     return {
