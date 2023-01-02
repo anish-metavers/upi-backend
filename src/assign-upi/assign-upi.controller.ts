@@ -22,12 +22,12 @@ export class AssignUpiController {
   constructor(private readonly assignUpiService: AssignUpiService) {}
 
   @Post(':user_id')
-  async updateUpi(
+  async assignUpi(
     @Req() req: Request,
     @Param('user_id') user_id: string,
     @Body() body: AssignUpiDto,
   ) {
-    return await this.assignUpiService.updateUpi(req, +user_id, body);
+    return await this.assignUpiService.assignUpi(req, +user_id, body);
   }
 
   @Delete(':user_upi_id')

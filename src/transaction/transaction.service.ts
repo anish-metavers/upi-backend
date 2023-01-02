@@ -259,11 +259,8 @@ export class TransactionService {
       user_upi,
       end_at,
     });
-
-    return {
-      message: 'Updated successfully',
-      data: transaction,
-    };
+    await transaction.reload();
+    return transaction;
   }
 
   async updateUtr(id: number, verifyUtrDto: VerifyUtrDto) {
@@ -291,11 +288,13 @@ export class TransactionService {
 
     if (!ApiRes.response.success)
       throw new HttpException('Client API Error', 400);
+    await transaction.reload();
 
     return {
       statusCode: 201,
       success: true,
       message: 'Utr updated successfully',
+      response: { data: transaction },
     };
   }
 
@@ -329,8 +328,14 @@ export class TransactionService {
     });
     if (!ApiRes.response.success)
       throw new HttpException('Client API Error', 400);
-    else await transaction.update({ status });
-
+    else
+      await transaction.update({
+        status,
+        ...(status == 'COMPLETED' || status == 'FAILED'
+          ? { verify_timestamp: new Date() }
+          : {}),
+      });
+    await transaction.reload();
     return transaction;
   }
 }

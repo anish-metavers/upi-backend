@@ -69,6 +69,7 @@ export class ClientService {
 
     return {
       success: true,
+      message: 'Client Created Successfully!!',
       response: {
         data: {
           id: client.id,
@@ -76,7 +77,6 @@ export class ClientService {
           email: client.email,
         },
       },
-      message: 'Client Created Successfully!!',
     };
   }
 
@@ -157,7 +157,7 @@ export class ClientService {
         );
     }
     return {
-      message: 'Created successfully',
+      message: 'Client UPI Created Successfully!!',
       success: true,
       response: {
         newUpi: {
@@ -184,7 +184,7 @@ export class ClientService {
       { where: { id: client_upi_id } },
     );
     return {
-      message: 'Updated successfully',
+      message: 'Client UPI Updated successfully',
       success: true,
       response: {
         ...updateClientDto,
@@ -231,7 +231,7 @@ export class ClientService {
       offset,
     });
     return {
-      message: 'Get all client information',
+      message: 'Client UPIs Fetched Successfully!',
       success: true,
       response: { list, limit, page, totalItems, totalPages },
     };

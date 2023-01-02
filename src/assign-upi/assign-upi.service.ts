@@ -6,25 +6,85 @@ import { AssignUpiDto, AssignUpiListDto } from './dto/assignUpi.dto';
 
 @Injectable()
 export class AssignUpiService {
-  async updateUpi(
+  async assignUpi(
     req: Request,
     user_id: number,
     updateUserUpiDto: AssignUpiDto,
   ) {
     const { upis } = updateUserUpiDto;
 
-    const find_userUpi = await global.DB.ClientUpi.findAll({
-      where: { id: { [Op.in]: upis } },
-    });
+    const [find_userUpi, client_upi_permission, user] = await Promise.all([
+      global.DB.ClientUpi.findAll({
+        where: { id: { [Op.in]: upis } },
+      }),
+      global.DB.UserUpi.findAll({
+        where: { user_id },
+        attributes: ['id', 'user_id', 'client_upi_id'],
+      }),
+      global.DB.User.findOne({
+        where: { id: user_id },
+        include: [
+          {
+            model: global.DB.UserRole,
+            as: 'user_role_data',
+            attributes: ['id', 'user_id', 'role_id'],
+            include: [
+              {
+                model: global.DB.Role,
+                as: 'role_data',
+                attributes: ['id', 'name'],
+              },
+            ],
+          },
+        ],
+      }),
+    ]);
+
+    // const find_userUpi = await global.DB.ClientUpi.findAll({
+    //   where: { id: { [Op.in]: upis } },
+    // });
+    // const client_upi_permission = await global.DB.UserUpi.findAll({
+    //   where: { user_id },
+    //   attributes: ['id', 'user_id', 'client_upi_id'],
+    // });
+
+    // const user = await global.DB.User.findOne({
+    //   where: { id: user_id },
+    //   include: [
+    //     {
+    //       model: global.DB.UserRole,
+    //       as: 'user_role_data',
+    //       attributes: ['id', 'user_id', 'role_id'],
+    //       include: [
+    //         {
+    //           model: global.DB.Role,
+    //           as: 'role_data',
+    //           attributes: ['id', 'name'],
+    //         },
+    //       ],
+    //     },
+    //   ],
+    // });
+    if (!user)
+      throw new HttpException(
+        { message: 'User Not Found with this User Id!!' },
+        401,
+      );
 
     if (!find_userUpi || find_userUpi.length != upis.length) {
-      throw new HttpException('Client UPI Id is not Valid!!', 401);
+      throw new HttpException({ message: 'Client UPI Id is not Valid!!' }, 401);
     }
 
-    const client_upi_permission = await global.DB.UserUpi.findAll({
-      where: { user_id },
-      attributes: ['id', 'user_id', 'client_upi_id'],
-    });
+    let isTrxnManager =
+      user.user_role_data.filter(
+        (item) => item.role_data.name == 'Transaction Manager',
+      ).length > 0;
+
+    if (!isTrxnManager)
+      throw new HttpException(
+        { message: 'Upi can only be Assigned to Transaction Managers' },
+        401,
+      );
 
     let exist_upi = client_upi_permission;
     let upisToAdd = [...upis];
@@ -35,14 +95,15 @@ export class AssignUpiService {
         }
       }
     }
-    //console.log(upisToAdd,);
+    const dataToCreate = [];
     for (let i = 0; i < upisToAdd.length; i++) {
-      const user = await global.DB.UserUpi.create({
+      dataToCreate.push({
         user_id: user_id,
         client_upi_id: upisToAdd[i],
         created_by: req['user_id'],
       });
     }
+    const userUpis = await global.DB.UserUpi.bulkCreate(dataToCreate);
     return {
       message: 'Upis added successfully',
       success: true,
@@ -53,9 +114,15 @@ export class AssignUpiService {
     const upis_delete = await global.DB.UserUpi.destroy({
       where: { id: user_upi_id },
     });
-
+    if (!upis_delete)
+      throw new HttpException(
+        {
+          message: 'No Upi Found to Delete',
+        },
+        404,
+      );
     return {
-      message: ' Deleted successfully',
+      message: 'Deleted successfully',
       success: true,
       response: {},
     };

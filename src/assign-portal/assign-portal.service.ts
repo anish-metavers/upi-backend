@@ -16,31 +16,38 @@ export class AssignPortalService {
     const filterObj = {
       ...(user_id ? { id: user_id } : {}),
     };
-    const totalItems = await global.DB.User.count({
-      where: filterObj,
-      include: {
-        model: global.DB.UserPortal,
-        as: 'user_portal_data',
-        required: true,
-      },
-    });
+    const totalItems = (
+      await global.DB.UserPortal.findAll({
+        where: filterObj,
+        attributes: ['id'],
+        include: [
+          {
+            model: global.DB.Portal,
+            as: 'portal_data',
+            attributes: ['id'],
+            required: true,
+          },
+        ],
+      })
+    ).length;
     const offset = limit * (page - 1);
     const totalPages = Math.ceil(totalItems / limit);
 
-    const users = await global.DB.User.findAll({
+    const users = await global.DB.UserPortal.findAll({
       where: filterObj,
-      attributes: ['id', 'client_id', 'first_name', 'last_name'],
-      include: {
-        model: global.DB.UserPortal,
-        as: 'user_portal_data',
-        attributes: ['portal_id'],
-        required: true,
-        include: {
+      attributes: ['id', 'user_id', 'portal_id', 'status', 'created_at'],
+      include: [
+        {
           model: global.DB.Portal,
           as: 'portal_data',
-          attributes: ['id', 'name', 'domain'],
+          attributes: ['id', 'name', 'status'],
         },
-      },
+        {
+          model: global.DB.User,
+          as: 'user_data',
+          attributes: ['id', 'first_name', 'last_name'],
+        },
+      ],
       limit,
       offset,
     });

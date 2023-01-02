@@ -51,8 +51,9 @@ export class TransactionController {
     );
     return {
       statusCode: 201,
-      response: { data },
       success: true,
+      message: 'Transaction Status Updated Successfully!!',
+      response: { data },
     };
   }
 
@@ -95,8 +96,9 @@ export class TransactionController {
     );
     return {
       statusCode: 201,
-      response: { data },
       success: true,
+      message: 'Updated successfully',
+      response: { data },
     };
   }
 }

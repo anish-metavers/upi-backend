@@ -71,27 +71,42 @@ export class UserService {
 
     const hashedPassword = password; //await bcrypt.hash(password, 10);
 
-    const user = await global.DB.User.create({
-      first_name: firstName,
-      last_name: lastName,
-      email: email.toLowerCase(),
-      password: hashedPassword,
-      client_id: CLIENT_ID,
-      created_by: req['user_id'],
-    });
-
-    // Create Roles
-    const rolesData = roles.map((item) => {
-      return { user_id: user.id, role_id: item };
-    });
-    const rolesCreated = await global.DB.UserRole.bulkCreate(rolesData);
-
+    const trxn = await global.DB.sequelize.transaction();
+    const user = await global.DB.User.create(
+      {
+        first_name: firstName,
+        last_name: lastName,
+        email: email.toLowerCase(),
+        password: hashedPassword,
+        client_id: CLIENT_ID,
+        created_by: req['user_id'],
+      },
+      { transaction: trxn },
+    );
+    let rolesCreated = null;
+    try {
+      // Create Roles
+      const rolesData = roles.map((item) => {
+        return { user_id: user.id, role_id: item, created_by: req['user_id'] };
+      });
+      rolesCreated = await global.DB.UserRole.bulkCreate(rolesData, {
+        transaction: trxn,
+      });
+    } catch (error) {
+      console.log(error);
+      await trxn.rollback();
+      throw new HttpException(
+        { message: 'Internal Server Error!! In Creating Role!' },
+        400,
+      );
+    }
+    await trxn.commit();
+    await user.reload();
     return {
       success: true,
       message: 'User Created Successfully',
       response: {
-        data: user.toJSON(),
-        roles: rolesCreated.map((item: any) => item.toJSON()),
+        data: user,
       },
     };
   }

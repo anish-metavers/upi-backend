@@ -14,6 +14,14 @@ export class PortalService {
         { message: 'Client Id is required for Master Admin!!' },
         401,
       );
+
+    if (!req['client_id'] && createPortalDto.client_id) {
+      const client = await global.DB.Client.findOne({
+        where: { id: createPortalDto.client_id },
+      });
+      if (!client)
+        throw new HttpException({ message: 'Client Not Found!' }, 404);
+    }
     let portal;
     try {
       portal = await global.DB.Portal.create({
@@ -29,7 +37,7 @@ export class PortalService {
       else
         throw new HttpException({ message: 'Error in Creating Portal!!' }, 500);
     }
-
+    await portal.reload();
     return {
       success: true,
       message: 'Portal created successfully',
@@ -162,7 +170,8 @@ export class PortalService {
       console.log(error);
       if (error.name == 'SequelizeUniqueConstraintError')
         throw new HttpException({ message: 'Domain Already in Use!!' }, 401);
-      else throw new HttpException({ message: 'Error in  Portal!!' }, 500);
+      else
+        throw new HttpException({ message: 'Error in Updating Portal!!' }, 400);
     }
 
     return {

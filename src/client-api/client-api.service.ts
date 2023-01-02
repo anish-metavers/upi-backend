@@ -1,5 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Request } from 'express';
+import { Op } from 'sequelize';
 import { CreateClientApiDto } from './dto/create-client-api.dto';
 import { UpdateClientApiDto } from './dto/update-client-api.dto';
 
@@ -45,6 +46,8 @@ export class ClientApiService {
         created_by: user_id,
       });
     } catch (error) {
+      console.log(error);
+
       if (error.name == 'SequelizeDatabaseError') {
         throw new HttpException({ message: 'Api Type must be valid!!' }, 400);
       } else {
@@ -54,7 +57,7 @@ export class ClientApiService {
         );
       }
     }
-
+    await clientApi.reload();
     return {
       message: 'Client APIs created successfully',
       success: true,
@@ -93,20 +96,36 @@ export class ClientApiService {
       );
     const checkClientApi = await global.DB.ClientApi.findOne({
       where: {
+        id: { [Op.ne]: client_api_id },
         client_id: clientApi.client_id,
         portal_id: clientApi.portal_id,
         api_type,
       },
     });
 
+
     if (checkClientApi)
       throw new HttpException({ message: 'This API already Exists!!' }, 400);
 
-    await clientApi.update({
-      ...(api_method ? { api_method } : {}),
-      ...(api_endpoint ? { api_endpoint } : {}),
-      ...(api_type ? { api_type } : {}),
-    });
+    try {
+      await clientApi.update({
+        ...(api_method ? { api_method } : {}),
+        ...(api_endpoint ? { api_endpoint } : {}),
+        ...(api_type ? { api_type } : {}),
+      });
+    } catch (error) {
+      console.log(error);
+
+      if (error.name == 'SequelizeDatabaseError') {
+        throw new HttpException({ message: 'Api Type must be valid!!' }, 400);
+      } else {
+        throw new HttpException(
+          { message: 'Error during updating Client API' },
+          400,
+        );
+      }
+    }
+    await clientApi.reload();
 
     return {
       message: 'Client APIs created successfully',
