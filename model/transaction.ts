@@ -73,6 +73,11 @@ const model = (sequelize: Sequelize) => {
         type: DataTypes.DATE,
         allowNull: true,
       },
+      is_user_upi: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
       status: {
         type: DataTypes.ENUM('OPEN', 'PROCESSING', 'FAILED', 'COMPLETED'),
         defaultValue: 'OPEN',

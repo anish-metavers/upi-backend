@@ -40,7 +40,11 @@ export class DashboardService {
       }),
       global.DB.Transaction.findAll({
         where: filterObject,
-        attributes: ['status', [fn('count', col('id')), 'trxn_count']],
+        attributes: [
+          'status',
+          [fn('count', col('id')), 'trxn_count'],
+          [fn('sum', col('amount')), 'trxn_amount'],
+        ],
         group: ['status'],
       }),
       global.DB.Transaction.findAll({
@@ -55,6 +59,7 @@ export class DashboardService {
               ? 'portal_id'
               : 'client_id'
           }`,
+          [fn('count', col('Transaction.id')), 'trxn_count'],
           [fn('sum', col('amount')), 'total_amount'],
         ],
         include: {

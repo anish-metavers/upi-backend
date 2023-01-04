@@ -229,6 +229,7 @@ export class TransactionService {
           'amount',
           'client_upi',
           'user_upi',
+          'is_user_upi',
           'order_id',
           'utr',
           'status',
@@ -250,6 +251,12 @@ export class TransactionService {
 
     if (!transaction) throw new HttpException('Transaction Not Found', 404);
 
+    if (transaction.is_user_upi)
+      throw new HttpException(
+        { message: 'User Upi is Already Submitted!!' },
+        400,
+      );
+
     if (transaction.status != 'OPEN')
       throw new HttpException('This Transaction is already Submitted!!', 400);
 
@@ -258,6 +265,7 @@ export class TransactionService {
     await transaction.update({
       user_upi,
       end_at,
+      is_user_upi: true,
     });
     await transaction.reload();
     return transaction;
@@ -271,6 +279,9 @@ export class TransactionService {
 
     if (transaction.status != 'OPEN')
       throw new HttpException('This Transaction is already Submitted!!', 400);
+
+    if (!transaction.is_user_upi)
+      throw new HttpException({ message: 'Enter your UPI First!!' }, 400);
 
     await transaction.update({
       utr,

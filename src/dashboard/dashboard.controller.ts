@@ -1,11 +1,12 @@
 import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthGuard } from 'guard/auth.guard';
+import { PermissionGuard } from 'guard/permission.guard';
 import { DashboardService } from './dashboard.service';
 import { ClientWiseTrxnStatQuery } from './dto/query.dto';
 
 @Controller('dashboard')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PermissionGuard)
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 

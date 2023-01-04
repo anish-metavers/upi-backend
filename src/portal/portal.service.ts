@@ -47,17 +47,21 @@ export class PortalService {
 
   async findAll(req: Request, query: PortalFindDto) {
     const filterObject: any = {};
-
+    const { client_id } = query;
     let { limit, page } = query;
 
     limit = Number(limit) || PAGINATION.LIMIT;
     page = Number(page) || PAGINATION.PAGE;
 
-    const client_id = req['client_id'];
+    const req_client_id = req['client_id'];
     const user_id = req['user_id'];
     const user_role_name = req['role_name'];
 
-    if (user_role_name != 'Master Admin') filterObject.client_id = client_id;
+    if (user_role_name != 'Master Admin')
+      filterObject.client_id = req_client_id;
+    else if (client_id) {
+      filterObject.client_id = client_id;
+    }
 
     const totalItems = await global.DB.Portal.count({
       where: filterObject,
