@@ -11,12 +11,13 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthGuard } from 'guard/auth.guard';
+import { PermissionGuard } from 'guard/permission.guard';
 import { ClientApiService } from './client-api.service';
 import { CreateClientApiDto } from './dto/create-client-api.dto';
 import { UpdateClientApiDto } from './dto/update-client-api.dto';
 
 @Controller('client-api')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PermissionGuard)
 export class ClientApiController {
   constructor(private readonly clientApiService: ClientApiService) {}
 
