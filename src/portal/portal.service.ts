@@ -1,6 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { PAGINATION } from 'utils/config';
+import { Misc } from 'utils/misc';
 import { CreatePortalDto, PortalFindDto } from './dto/create-portal.dto';
 import { UpdatePortalDto } from './dto/update-portal.dto';
 
@@ -46,22 +47,28 @@ export class PortalService {
   }
 
   async findAll(req: Request, query: PortalFindDto) {
-    const filterObject: any = {};
-    const { client_id } = query;
+    const { client_id, status } = query;
     let { limit, page } = query;
 
     limit = Number(limit) || PAGINATION.LIMIT;
     page = Number(page) || PAGINATION.PAGE;
 
     const req_client_id = req['client_id'];
-    const user_id = req['user_id'];
+    const req_user_id = req['user_id'];
     const user_role_name = req['role_name'];
 
-    if (user_role_name != 'Master Admin')
-      filterObject.client_id = req_client_id;
-    else if (client_id) {
-      filterObject.client_id = client_id;
-    }
+    let filterObject: any = {};
+
+    if (status) filterObject.status = status;
+
+    const filterFromRoles = await Misc.createFilterFromRoles(
+      user_role_name,
+      req_client_id,
+      req_user_id,
+      { client_id },
+    );
+
+    filterObject = { ...filterObject, ...filterFromRoles };
 
     const totalItems = await global.DB.Portal.count({
       where: filterObject,

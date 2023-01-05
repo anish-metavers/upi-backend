@@ -26,6 +26,10 @@ export class ClientListDto {
 }
 
 export class ClientUpiListDto {
+  client_id: string | number;
+  portal_id: string | number;
+  status: string;
+
   page: number;
 
   limit: number;

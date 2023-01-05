@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   Query,
   Req,
   UseGuards,
@@ -100,5 +101,10 @@ export class TransactionController {
       message: 'Updated successfully',
       response: { data },
     };
+  }
+
+  @Post('upload/image')
+  async uploadTrxnImage(@Body() body: any) {
+    return await this.transactionService.uploadTrxnImage(body);
   }
 }

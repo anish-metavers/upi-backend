@@ -349,4 +349,12 @@ export class TransactionService {
     await transaction.reload();
     return transaction;
   }
+
+  async uploadTrxnImage(body: any) {
+    return {
+      message: 'Image Uploaded Successfully!!',
+      success: true,
+      response: { data: body },
+    };
+  }
 }

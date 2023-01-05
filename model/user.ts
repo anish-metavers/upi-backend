@@ -16,6 +16,12 @@ export class User extends Model {
       as: 'user_portal_data',
       foreignKey: 'user_id',
     });
+
+    this.belongsTo(models.Client, {
+      as: 'client_data',
+      foreignKey: 'client_id',
+      targetKey: 'id',
+    });
   }
 }
 
