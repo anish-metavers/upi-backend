@@ -78,6 +78,9 @@ const model = (sequelize: Sequelize) => {
         allowNull: false,
         defaultValue: false,
       },
+      image_url: {
+        type: DataTypes.STRING,
+      },
       status: {
         type: DataTypes.ENUM('OPEN', 'PROCESSING', 'FAILED', 'COMPLETED'),
         defaultValue: 'OPEN',

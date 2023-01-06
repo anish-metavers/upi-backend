@@ -20,8 +20,12 @@ export class CreateUserDto {
 }
 
 export class UserListDto {
+  client_id: string | number;
   role_id: string | number;
   role_name: string;
+  email: string;
+  first_name: string;
+  status: string;
   page: number;
   limit: number;
 }

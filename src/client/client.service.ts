@@ -9,6 +9,7 @@ import { UpdateClientDto, UpdateClientUpiDto } from './dto/update-client.dto';
 import { Request } from 'express';
 import { Op } from 'sequelize';
 import { PAGINATION } from 'utils/config';
+import { Misc } from 'utils/misc';
 
 @Injectable()
 export class ClientService {
@@ -193,30 +194,34 @@ export class ClientService {
   }
 
   async getClientUpiList(@Req() req: Request, query: ClientUpiListDto) {
+    const { client_id, portal_id, status } = query;
     let { limit, page } = query;
 
     limit = Number(limit) || PAGINATION.LIMIT;
     page = Number(page) || PAGINATION.PAGE;
 
-    const client_id = req['client_id'];
-    const user_id = req['user_id'];
+    const req_client_id = req['client_id'];
+    const req_user_id = req['user_id'];
     const user_role_name = req['role_name'];
 
-    const filterObject: any = {};
+    let filterObject: any = {};
 
-    if (user_role_name === 'Admin') filterObject.client_id = client_id;
-    else if (user_role_name === 'Portal Manager') {
-      const userPortals = await global.DB.UserPortal.findAll({
-        where: { user_id },
-        attributes: ['id', 'portal_id'],
-      });
-      filterObject.portal_id =
-        userPortals.length > 0
-          ? {
-              [Op.in]: userPortals.map((item: any) => item.portal_id),
-            }
-          : 0;
-    }
+    if (portal_id) filterObject.portal_id = portal_id;
+    if (status) filterObject.status = status;
+
+    const filterFromRoles = await Misc.createFilterFromRoles(
+      user_role_name,
+      req_client_id,
+      req_user_id,
+      {
+        client_id,
+        portal_id,
+      },
+    );
+
+    console.log('FilterFromRoles:', filterFromRoles);
+
+    filterObject = { ...filterObject, ...filterFromRoles };
 
     const totalItems = await global.DB.ClientUpi.count({
       where: filterObject,
@@ -227,6 +232,18 @@ export class ClientService {
     const list = await global.DB.ClientUpi.findAll({
       where: filterObject,
       attributes: ['id', 'client_id', 'portal_id', 'upi', 'status'],
+      include: [
+        {
+          model: global.DB.Client,
+          as: 'client_data',
+          attributes: ['id', 'name'],
+        },
+        {
+          model: global.DB.Portal,
+          as: 'portal_data',
+          attributes: ['id', 'name'],
+        },
+      ],
       limit,
       offset,
     });

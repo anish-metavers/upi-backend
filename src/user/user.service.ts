@@ -78,7 +78,7 @@ export class UserService {
         last_name: lastName,
         email: email.toLowerCase(),
         password: hashedPassword,
-        client_id: CLIENT_ID,
+        client_id: checkRoles[0].name == 'Master Admin' ? 0 : CLIENT_ID,
         created_by: req['user_id'],
       },
       { transaction: trxn },
@@ -112,23 +112,28 @@ export class UserService {
   }
 
   async findAll(req: Request, query: UserListDto) {
-    const { role_id, role_name } = query;
+    const { client_id, email, first_name, status, role_id, role_name } = query;
 
     let { limit, page } = query;
 
     limit = Number(limit) || PAGINATION.LIMIT;
     page = Number(page) || PAGINATION.PAGE;
 
-    const client_id = req['client_id'];
+    const req_client_id = req['client_id'];
     const user_id = req['user_id'];
     const user_role_name = req['role_name'];
 
-    const filterObject: any = { ...(client_id ? { client_id } : {}) };
+    const filterObject: any = {};
     const roleFilterObj: any = { ...(role_id ? { role_id } : {}) };
 
-    if (user_role_name === 'Admin') filterObject.client_id = client_id;
+    if (client_id) filterObject.client_id = client_id;
+    if (email) filterObject.email = { [Op.like]: `%${email}%` };
+    if (first_name) filterObject.first_name = { [Op.like]: `%${first_name}%` };
+    if (status) filterObject.status = status;
+
+    if (user_role_name === 'Admin') filterObject.client_id = req_client_id;
     else if (user_role_name === 'Portal Manager') {
-      filterObject.client_id = client_id;
+      filterObject.client_id = req_client_id;
     }
 
     let checkRole: any;
@@ -162,18 +167,25 @@ export class UserService {
     const users = await global.DB.User.findAll({
       where: filterObject,
       attributes: { exclude: ['createdAt', 'updatedAt', 'password'] },
-      include: {
-        model: global.DB.UserRole,
-        as: 'user_role_data',
-        attributes: ['role_id'],
-        where: roleFilterObj,
-        required: true,
-        include: {
-          model: global.DB.Role,
-          as: 'role_data',
-          attributes: ['id', 'name', 'priority'],
+      include: [
+        {
+          model: global.DB.UserRole,
+          as: 'user_role_data',
+          attributes: ['role_id'],
+          where: roleFilterObj,
+          required: true,
+          include: {
+            model: global.DB.Role,
+            as: 'role_data',
+            attributes: ['id', 'name', 'priority'],
+          },
         },
-      },
+        {
+          model: global.DB.Client,
+          as: 'client_data',
+          attributes: ['id', 'name'],
+        },
+      ],
       // logging: true,
       limit,
       offset,

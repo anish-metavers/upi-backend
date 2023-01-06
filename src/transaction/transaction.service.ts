@@ -3,6 +3,7 @@ import { Request } from 'express';
 import { Op } from 'sequelize';
 import { ThirdPartyService } from 'src/third-party/third-party.service';
 import { PAGINATION } from 'utils/config';
+import { uploadFile } from 'utils/fileUploader';
 import { TransactionListFilterDto } from './dto/create-upi.dto';
 import {
   InitTransactionDTO,
@@ -348,5 +349,69 @@ export class TransactionService {
       });
     await transaction.reload();
     return transaction;
+  }
+
+  async uploadTrxnImage(
+    file: Express.Multer.File,
+    trxn_id: string,
+    body: VerifyUtrDto,
+  ) {
+    const { utr } = body;
+    const trxn = await global.DB.Transaction.findOne({
+      where: { id: trxn_id },
+    });
+    if (!file)
+      throw new HttpException(
+        { message: 'Please select an Image File!!' },
+        400,
+      );
+
+    if (!trxn)
+      throw new HttpException(
+        { message: 'No Transaction found with this Id!!' },
+        400,
+      );
+    if (trxn.status != 'OPEN')
+      throw new HttpException(
+        { message: 'Transaction is not in Open State!!' },
+        400,
+      );
+
+    if (!trxn.is_user_upi)
+      throw new HttpException({ message: 'Enter your UPI First!!' }, 400);
+
+    const s3Res = await uploadFile(file);
+
+    const ApiRes = await this.thirdPartyService.callApiForClient({
+      apiReq: {
+        query: { order_id: trxn.order_id },
+        body: { status: 'PROCESSING' },
+      },
+      apiType: 'UPDATE_TRANSACTION',
+      portal_id: trxn.portal_id,
+    });
+
+    if (!ApiRes.response.success)
+      throw new HttpException('Client API Error', 400);
+
+    if (!s3Res.success)
+      throw new HttpException(
+        { message: 'Error in Image Upload!', error: s3Res.error },
+        400,
+      );
+
+    await trxn.update({
+      image_url: s3Res.data.Location,
+      utr,
+      status: 'PROCESSING',
+    });
+
+    await trxn.reload();
+
+    return {
+      message: 'Image Uploaded Successfully!!',
+      success: true,
+      response: { data: trxn },
+    };
   }
 }

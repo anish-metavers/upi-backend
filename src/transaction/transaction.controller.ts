@@ -3,11 +3,16 @@ import {
   Controller,
   Get,
   Param,
+  ParseFilePipeBuilder,
   Patch,
+  Post,
   Query,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { AuthGuard } from 'guard/auth.guard';
 import { PermissionGuard } from 'guard/permission.guard';
@@ -100,5 +105,21 @@ export class TransactionController {
       message: 'Updated successfully',
       response: { data },
     };
+  }
+
+  @Post('image/:trxn_id')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadTrxnImage(
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addMaxSizeValidator({ maxSize: 2097152 })
+        .addFileTypeValidator({ fileType: 'image/' })
+        .build(),
+    )
+    file: Express.Multer.File,
+    @Param('trxn_id') trxn_id: string,
+    @Body() body: VerifyUtrDto,
+  ) {
+    return await this.transactionService.uploadTrxnImage(file, trxn_id, body);
   }
 }

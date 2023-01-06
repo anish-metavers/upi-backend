@@ -112,7 +112,7 @@ export class AssignPortalService {
           404,
         );
     }
-
+    await userPortal.reload();
     return {
       success: true,
       message: 'Portal Assigned Successfully!!',
