@@ -7,6 +7,10 @@ export class AssignUpiDto {
 }
 
 export class AssignUpiListDto {
+  client_id: string | number;
+  portal_id: string | number;
+  client_upi_id: string | number;
+  first_name: string;
   limit: number;
   page: number;
 }

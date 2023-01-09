@@ -129,11 +129,21 @@ export class AssignUpiService {
   }
 
   async findAllUserUpi(req: Request, query: AssignUpiListDto) {
+    const { client_id, portal_id, client_upi_id, first_name } = query;
     const filterObject: any = {};
+    const innerFilterObject1: any = {};
+    const innerFilterObject2: any = {};
+
     let { limit, page } = query;
 
     limit = Number(limit) || PAGINATION.LIMIT;
     page = Number(page) || PAGINATION.PAGE;
+
+    if (client_upi_id) filterObject.client_upi_id = client_upi_id;
+    if (client_id) innerFilterObject1.client_id = client_id;
+    if (portal_id) innerFilterObject1.portal_id = portal_id;
+    if (first_name)
+      innerFilterObject2.first_name = { [Op.like]: `%${first_name}%` };
 
     const totalItems = (
       await global.DB.UserUpi.findAll({
@@ -143,8 +153,16 @@ export class AssignUpiService {
           {
             model: global.DB.ClientUpi,
             as: 'client_upi_data',
+            where: innerFilterObject1,
             attributes: ['id'],
             required: true,
+          },
+          {
+            model: global.DB.User,
+            as: 'user_data',
+            required: true,
+            where: innerFilterObject1,
+            attributes: ['id'],
           },
         ],
       })
@@ -160,12 +178,28 @@ export class AssignUpiService {
         {
           model: global.DB.ClientUpi,
           as: 'client_upi_data',
+          where: innerFilterObject1,
+          required: true,
           attributes: ['id', 'upi', 'client_id', 'portal_id', 'status'],
+          include: [
+            {
+              model: global.DB.Client,
+              as: 'client_data',
+              attributes: ['id', 'name'],
+            },
+            {
+              model: global.DB.Portal,
+              as: 'portal_data',
+              attributes: ['id', 'name'],
+            },
+          ],
         },
         {
           model: global.DB.User,
           as: 'user_data',
-          attributes: ['id', 'first_name', 'last_name'],
+          required: true,
+          where: innerFilterObject2,
+          attributes: ['id', 'first_name', 'last_name', 'email'],
         },
       ],
       limit,
