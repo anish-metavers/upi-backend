@@ -21,8 +21,9 @@ const model = (sequelize: Sequelize) => {
         allowNull: false,
       },
       status: {
-        type: DataTypes.ENUM('0', '1'),
-        defaultValue: '1',
+        type: DataTypes.ENUM('ACTIVE', 'INACTIVE'),
+        allowNull: false,
+        defaultValue: 'ACTIVE',
       },
       created_by: {
         type: DataTypes.INTEGER,
