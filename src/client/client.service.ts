@@ -157,16 +157,27 @@ export class ClientService {
           400,
         );
     }
+
+    const newUpi = await global.DB.ClientUpi.findOne({
+      where: { id: clientUpi.id },
+      include: [
+        {
+          model: global.DB.Client,
+          as: 'client_data',
+          attributes: ['id', 'name'],
+        },
+        {
+          model: global.DB.Portal,
+          as: 'portal_data',
+          attributes: ['id', 'name'],
+        },
+      ],
+    });
     return {
       message: 'Client UPI Created Successfully!!',
       success: true,
       response: {
-        newUpi: {
-          id: clientUpi.id,
-          client_id: clientUpi.client_id,
-          portal_id: clientUpi.portal_id,
-          upi: clientUpi.upi,
-        },
+        data: newUpi,
       },
     };
   }

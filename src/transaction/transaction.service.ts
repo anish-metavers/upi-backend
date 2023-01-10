@@ -186,7 +186,7 @@ export class TransactionService {
           portal_id,
         }),
         global.DB.ClientUpi.findAll({
-          where: { portal_id, status: '1' },
+          where: { portal_id, status: 'ACTIVE' },
         }),
       ]);
 
