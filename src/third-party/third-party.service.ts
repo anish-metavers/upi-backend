@@ -126,7 +126,7 @@ export class ThirdPartyService {
       where: {
         portal_id,
         api_type,
-        status: '1',
+        status: 'ACTIVE',
       },
       attributes: ['id', 'api_type', 'api_endpoint', 'api_method'],
     });
