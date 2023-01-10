@@ -45,6 +45,7 @@ const model = (sequelize: Sequelize) => {
       },
       status: {
         type: DataTypes.ENUM('ACTIVE', 'INACTIVE'),
+        allowNull: false,
         defaultValue: 'ACTIVE',
       },
       created_by: {

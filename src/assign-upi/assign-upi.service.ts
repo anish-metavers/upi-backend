@@ -13,7 +13,7 @@ export class AssignUpiService {
   ) {
     const { upis } = updateUserUpiDto;
 
-    const [find_userUpi, client_upi_permission, user] = await Promise.all([
+    const [clientUpis, userUpis, user] = await Promise.all([
       global.DB.ClientUpi.findAll({
         where: { id: { [Op.in]: upis } },
       }),
@@ -40,53 +40,38 @@ export class AssignUpiService {
       }),
     ]);
 
-    // const find_userUpi = await global.DB.ClientUpi.findAll({
-    //   where: { id: { [Op.in]: upis } },
-    // });
-    // const client_upi_permission = await global.DB.UserUpi.findAll({
-    //   where: { user_id },
-    //   attributes: ['id', 'user_id', 'client_upi_id'],
-    // });
-
-    // const user = await global.DB.User.findOne({
-    //   where: { id: user_id },
-    //   include: [
-    //     {
-    //       model: global.DB.UserRole,
-    //       as: 'user_role_data',
-    //       attributes: ['id', 'user_id', 'role_id'],
-    //       include: [
-    //         {
-    //           model: global.DB.Role,
-    //           as: 'role_data',
-    //           attributes: ['id', 'name'],
-    //         },
-    //       ],
-    //     },
-    //   ],
-    // });
     if (!user)
       throw new HttpException(
         { message: 'User Not Found with this User Id!!' },
         401,
       );
 
-    if (!find_userUpi || find_userUpi.length != upis.length) {
+    if (!clientUpis || clientUpis.length != upis.length) {
       throw new HttpException({ message: 'Client UPI Id is not Valid!!' }, 401);
     }
 
-    let isTrxnManager =
+    // Check if User is Transaction Manager
+    let isUserTrxnManager =
       user.user_role_data.filter(
-        (item) => item.role_data.name == 'Transaction Manager',
+        (item: any) => item.role_data.name == 'Transaction Manager',
       ).length > 0;
-
-    if (!isTrxnManager)
+    if (!isUserTrxnManager)
       throw new HttpException(
         { message: 'Upi can only be Assigned to Transaction Managers' },
         401,
       );
 
-    let exist_upi = client_upi_permission;
+    clientUpis.map((item: any) => {
+      if (item.client_id != user.client_id) {
+        throw new HttpException(
+          { message: 'User and Upi does not belongs to same Client!' },
+          401,
+        );
+      }
+    });
+
+    // Filter Already Existing Upis
+    let exist_upi = userUpis;
     let upisToAdd = [...upis];
     for (let i = 0; i < exist_upi.length; i++) {
       for (let j = 0; j < upis.length; j++) {
@@ -95,6 +80,8 @@ export class AssignUpiService {
         }
       }
     }
+
+    // Generating Final Array to Create Entry in DB
     const dataToCreate = [];
     for (let i = 0; i < upisToAdd.length; i++) {
       dataToCreate.push({
@@ -103,7 +90,7 @@ export class AssignUpiService {
         created_by: req['user_id'],
       });
     }
-    const userUpis = await global.DB.UserUpi.bulkCreate(dataToCreate);
+    await global.DB.UserUpi.bulkCreate(dataToCreate);
     return {
       message: 'Upis added successfully',
       success: true,
@@ -129,11 +116,21 @@ export class AssignUpiService {
   }
 
   async findAllUserUpi(req: Request, query: AssignUpiListDto) {
+    const { client_id, portal_id, client_upi_id, first_name } = query;
     const filterObject: any = {};
+    const innerFilterObject1: any = {};
+    const innerFilterObject2: any = {};
+
     let { limit, page } = query;
 
     limit = Number(limit) || PAGINATION.LIMIT;
     page = Number(page) || PAGINATION.PAGE;
+
+    if (client_upi_id) filterObject.client_upi_id = client_upi_id;
+    if (client_id) innerFilterObject1.client_id = client_id;
+    if (portal_id) innerFilterObject1.portal_id = portal_id;
+    if (first_name)
+      innerFilterObject2.first_name = { [Op.like]: `%${first_name}%` };
 
     const totalItems = (
       await global.DB.UserUpi.findAll({
@@ -143,8 +140,16 @@ export class AssignUpiService {
           {
             model: global.DB.ClientUpi,
             as: 'client_upi_data',
+            where: innerFilterObject1,
             attributes: ['id'],
             required: true,
+          },
+          {
+            model: global.DB.User,
+            as: 'user_data',
+            required: true,
+            where: innerFilterObject2,
+            attributes: ['id'],
           },
         ],
       })
@@ -160,12 +165,28 @@ export class AssignUpiService {
         {
           model: global.DB.ClientUpi,
           as: 'client_upi_data',
+          where: innerFilterObject1,
+          required: true,
           attributes: ['id', 'upi', 'client_id', 'portal_id', 'status'],
+          include: [
+            {
+              model: global.DB.Client,
+              as: 'client_data',
+              attributes: ['id', 'name'],
+            },
+            {
+              model: global.DB.Portal,
+              as: 'portal_data',
+              attributes: ['id', 'name'],
+            },
+          ],
         },
         {
           model: global.DB.User,
           as: 'user_data',
-          attributes: ['id', 'first_name', 'last_name'],
+          required: true,
+          where: innerFilterObject2,
+          attributes: ['id', 'first_name', 'last_name', 'email'],
         },
       ],
       limit,

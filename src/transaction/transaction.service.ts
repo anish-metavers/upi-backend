@@ -167,6 +167,7 @@ export class TransactionService {
         'amount',
         'client_upi',
         'user_upi',
+        'is_user_upi',
         'order_id',
         'utr',
         'status',
