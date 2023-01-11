@@ -12,16 +12,43 @@ export class UserService {
   async create(req: Request, createUserDto: CreateUserDto) {
     const { client_id, firstName, lastName, email, password, roles } =
       createUserDto;
-    const guard_user_id = req['user_id'];
+
+    const req_user_id = req['user_id'];
+    const req_role_name = req['role_name'];
 
     let CLIENT_ID: string | number;
 
-    if (!req['isMaster']) CLIENT_ID = req['client_id'];
+    if (roles.length <= 0)
+      throw new HttpException({ message: 'Roles are Invalid' }, 400);
 
-    if (!client_id && !CLIENT_ID)
+    const [checkUser, checkRoles, reqUserRoles] = await Promise.all([
+      global.DB.User.findOne({ where: { email } }),
+      global.DB.Role.findAll({
+        where: { id: { [Op.in]: roles } },
+      }),
+      global.DB.UserRole.findAll({
+        where: { user_id: req_user_id },
+        include: {
+          model: global.DB.Role,
+          as: 'role_data',
+          attributes: ['id', 'name', 'priority'],
+        },
+      }),
+    ]);
+
+    if (checkUser)
+      throw new HttpException({ message: 'User already exists' }, 400);
+    if (checkRoles.length !== roles.length)
+      throw new HttpException({ message: 'Roles are Invalid' }, 400);
+
+    if (
+      req_role_name === 'Master Admin' &&
+      checkRoles[0].name == 'Master Admin'
+    ) {
+      CLIENT_ID = 0;
+    } else if (req_role_name === 'Master Admin' && !client_id) {
       throw new HttpException({ message: 'Please provide a Client Id!!' }, 404);
-
-    if (!CLIENT_ID && req['isMaster']) {
+    } else if (req_role_name === 'Master Admin' && client_id) {
       const client = await global.DB.Client.findOne({
         where: { id: client_id },
         attributes: ['id'],
@@ -29,34 +56,12 @@ export class UserService {
       if (!client)
         throw new HttpException({ message: 'Client not found' }, 404);
       CLIENT_ID = client_id;
+    } else {
+      CLIENT_ID = req['client_id'];
     }
 
-    if (roles.length <= 0)
-      throw new HttpException({ message: 'Roles are Invalid' }, 400);
-
-    const checkUser = await global.DB.User.findOne({ where: { email } });
-    if (checkUser)
-      throw new HttpException({ message: 'User already exists' }, 400);
-
-    // Validate Roles
-    const checkRoles = await global.DB.Role.findAll({
-      where: { id: { [Op.in]: roles } },
-    });
-    if (checkRoles.length !== roles.length)
-      throw new HttpException({ message: 'Roles are Invalid' }, 400);
-
-    // Validate User Role and Guard Role
-    const guardUserRoles = await global.DB.UserRole.findAll({
-      where: { user_id: guard_user_id },
-      include: {
-        model: global.DB.Role,
-        as: 'role_data',
-        attributes: ['id', 'name', 'priority'],
-      },
-    });
-
-    let maxGuardUserRole = guardUserRoles[0];
-    for (let guard_role of guardUserRoles) {
+    let maxGuardUserRole = reqUserRoles[0];
+    for (let guard_role of reqUserRoles) {
       if (guard_role.role_data.priority > maxGuardUserRole.role_data.priority)
         maxGuardUserRole = guard_role;
     }
@@ -78,11 +83,12 @@ export class UserService {
         last_name: lastName,
         email: email.toLowerCase(),
         password: hashedPassword,
-        client_id: checkRoles[0].name == 'Master Admin' ? 0 : CLIENT_ID,
+        client_id: CLIENT_ID,
         created_by: req['user_id'],
       },
       { transaction: trxn },
     );
+
     let rolesCreated = null;
     try {
       // Create Roles

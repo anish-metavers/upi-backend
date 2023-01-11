@@ -33,7 +33,6 @@ export class AuthGuard implements CanActivate {
 
     req['user_id'] = user.id;
     req['client_id'] = user.client_id;
-    req['isMaster'] = !user.client_id ? true : false;
 
     return true;
   }
