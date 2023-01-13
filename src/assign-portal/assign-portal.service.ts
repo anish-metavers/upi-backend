@@ -15,7 +15,7 @@ export class AssignPortalService {
     page = Number(page) || PAGINATION.PAGE;
 
     const filterObj = {
-      ...(user_id ? { id: user_id } : {}),
+      ...(user_id ? { user_id } : {}),
     };
     const totalItems = (
       await global.DB.UserPortal.findAll({
