@@ -1,8 +1,9 @@
 import { IsArray, IsNotEmpty } from 'class-validator';
 
 export class AssignPortalDto {
+  @IsArray()
   @IsNotEmpty()
-  portal_id: string | number;
+  portal_ids: number[];
 }
 
 export class UserPortalQueryDto {

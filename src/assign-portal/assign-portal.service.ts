@@ -1,5 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Request } from 'express';
+import { Op } from 'sequelize';
 import { PAGINATION } from 'utils/config';
 import { AssignPortalDto, UserPortalQueryDto } from './dto/assignPortal.dto';
 
@@ -60,10 +61,12 @@ export class AssignPortalService {
   }
 
   async assignPortal(req: Request, user_id: string, body: AssignPortalDto) {
-    const { portal_id } = body;
+    const { portal_ids } = body;
 
-    const [portal, user] = await Promise.all([
-      global.DB.Portal.findOne({ where: { id: portal_id } }),
+    const [portals, user] = await Promise.all([
+      global.DB.Portal.findAll({
+        where: { id: { [Op.in]: portal_ids } },
+      }),
       global.DB.User.findOne({
         where: { id: user_id },
         attributes: { exclude: ['createdAt', 'updatedAt', 'password'] },
@@ -81,7 +84,9 @@ export class AssignPortalService {
       }),
     ]);
 
-    if (!portal) throw new HttpException({ message: 'Portal not found' }, 404);
+    if (!portals || portals.length != portal_ids.length)
+      throw new HttpException({ message: 'Invalid Portals found!!' }, 404);
+
     if (!user)
       throw new HttpException(
         { message: 'User not found with this UserId!' },
@@ -94,13 +99,17 @@ export class AssignPortalService {
       );
 
     let userPortal = null;
+    let trxn = await global.DB.sequelize.transaction();
+
+    let dataArr = portal_ids.map((id) => {
+      return { user_id, portal_id: id, created_by: req['user_id'] };
+    });
     try {
-      userPortal = await global.DB.UserPortal.create({
-        user_id,
-        portal_id,
-        created_by: req['user_id'],
+      userPortal = await global.DB.UserPortal.bulkCreate(dataArr, {
+        transaction: trxn,
       });
     } catch (error) {
+      await trxn.rollback();
       if (error.name == 'SequelizeUniqueConstraintError')
         throw new HttpException(
           { message: 'Portal Already Assigned to this User!!' },
@@ -112,11 +121,14 @@ export class AssignPortalService {
           404,
         );
     }
-    await userPortal.reload();
+
+    await trxn.commit();
+
+    // await userPortal.reload();
     return {
       success: true,
       message: 'Portal Assigned Successfully!!',
-      response: { data: userPortal },
+      response: {},
     };
   }
 
