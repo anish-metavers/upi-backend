@@ -49,9 +49,13 @@ const model = (sequelize: Sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      client_upi_name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
       client_upi: {
         type: DataTypes.STRING,
-        allowNull: true,
+        allowNull: false,
       },
       user_upi: {
         type: DataTypes.STRING,

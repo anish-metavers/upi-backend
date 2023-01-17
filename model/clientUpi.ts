@@ -34,6 +34,9 @@ const model = (sequelize: Sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      name: {
+        type: DataTypes.STRING,
+      },
       upi: {
         type: DataTypes.STRING,
         unique: true,
