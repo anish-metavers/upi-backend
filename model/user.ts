@@ -37,7 +37,6 @@ const model = (sequelize: Sequelize) => {
       },
       client_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
       },
       first_name: {
         type: DataTypes.STRING,

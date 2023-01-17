@@ -126,6 +126,7 @@ export class TransactionService {
         'order_id',
         'amount',
         'client_upi',
+        'client_upi_name',
         'user_upi',
         'note',
         'utr',
@@ -134,6 +135,18 @@ export class TransactionService {
         'status',
         'created_at',
         'updated_at',
+      ],
+      include: [
+        {
+          model: global.DB.Portal,
+          as: 'portal_data',
+          attributes: ['id', 'name'],
+        },
+        {
+          model: global.DB.Client,
+          as: 'client_data',
+          attributes: ['id', 'name'],
+        },
       ],
       limit,
       offset,
@@ -166,6 +179,7 @@ export class TransactionService {
         'id',
         'amount',
         'client_upi',
+        'client_upi_name',
         'user_upi',
         'is_user_upi',
         'order_id',
@@ -215,6 +229,7 @@ export class TransactionService {
       const randIndex = Math.floor(Math.random() * clientUpi.length);
 
       await global.DB.Transaction.create({
+        client_upi_name: clientUpi[randIndex].name,
         client_upi: clientUpi[randIndex].upi,
         client_upi_id: clientUpi[randIndex].id,
         client_id: portal.client_id,
@@ -230,6 +245,7 @@ export class TransactionService {
           'id',
           'amount',
           'client_upi',
+          'client_upi_name',
           'user_upi',
           'is_user_upi',
           'order_id',

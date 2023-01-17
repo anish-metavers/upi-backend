@@ -45,7 +45,7 @@ export class UserService {
       req_role_name === 'Master Admin' &&
       checkRoles[0].name == 'Master Admin'
     ) {
-      CLIENT_ID = 0;
+      CLIENT_ID = null;
     } else if (req_role_name === 'Master Admin' && !client_id) {
       throw new HttpException({ message: 'Please provide a Client Id!!' }, 404);
     } else if (req_role_name === 'Master Admin' && client_id) {

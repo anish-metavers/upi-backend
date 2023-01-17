@@ -1,6 +1,11 @@
-import { IsEmail, IsNotEmpty } from 'class-validator';
+import { IsEmail, IsNotEmpty, Length, Matches } from 'class-validator';
 
 export class CreateClientUpiDto {
+  @IsNotEmpty()
+  name: string;
+
+  @Length(6, 20)
+  @Matches(/@/, { message: 'Not a Valid UPI!' })
   @IsNotEmpty()
   upi: string;
 

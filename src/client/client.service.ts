@@ -115,7 +115,7 @@ export class ClientService {
     @Req() req: Request,
     createClientDto: CreateClientUpiDto,
   ) {
-    const { upi, portal_id } = createClientDto;
+    const { name, upi, portal_id } = createClientDto;
     let client_id = req['client_id'];
 
     if (!client_id) {
@@ -145,6 +145,7 @@ export class ClientService {
       clientUpi = await global.DB.ClientUpi.create({
         portal_id,
         client_id,
+        name,
         upi,
         created_by: req['user_id'],
       });
@@ -188,18 +189,39 @@ export class ClientService {
     updateClientDto: UpdateClientUpiDto,
   ) {
     // const client_id = req['client_id'];
-    const updateClient = await global.DB.ClientUpi.update(
-      {
-        ...updateClientDto,
+    const { name, upi, status } = updateClientDto;
+    const client_upi = await global.DB.ClientUpi.findOne({
+      where: { id: client_upi_id },
+    });
+    if (!client_upi)
+      throw new HttpException({ message: 'Client Upi Not Found' }, 404);
+
+    try {
+      await client_upi.update({
+        ...(name ? { name } : {}),
+        ...(upi ? { upi } : {}),
+        ...(status ? { status } : {}),
         updated_by: req['user_id'],
-      },
-      { where: { id: client_upi_id } },
-    );
+      });
+    } catch (error) {
+      if (error.name == 'SequelizeUniqueConstraintError')
+        throw new HttpException({ message: 'Upi Already Exist!!' }, 400);
+      else {
+        console.log(error);
+        throw new HttpException(
+          { message: 'Error in Updating CLient UPI!!' },
+          400,
+        );
+      }
+    }
+
+    await client_upi.reload();
+
     return {
       message: 'Client UPI Updated successfully',
       success: true,
       response: {
-        ...updateClientDto,
+        data: client_upi,
       },
     };
   }
@@ -242,7 +264,7 @@ export class ClientService {
 
     const list = await global.DB.ClientUpi.findAll({
       where: filterObject,
-      attributes: ['id', 'client_id', 'portal_id', 'upi', 'status'],
+      attributes: ['id', 'client_id', 'portal_id', 'name', 'upi', 'status'],
       include: [
         {
           model: global.DB.Client,
