@@ -233,13 +233,28 @@ export class ClientService {
       }
     }
 
-    await client_upi.reload();
+    const clientUpiData = await global.DB.ClientUpi.findOne({
+      where: { id: client_upi_id },
+      attributes: ['id', 'client_id', 'portal_id', 'name', 'upi', 'status'],
+      include: [
+        {
+          model: global.DB.Client,
+          as: 'client_data',
+          attributes: ['id', 'name'],
+        },
+        {
+          model: global.DB.Portal,
+          as: 'portal_data',
+          attributes: ['id', 'name'],
+        },
+      ],
+    });
 
     return {
       message: 'Client UPI Updated successfully',
       success: true,
       response: {
-        data: client_upi,
+        data: clientUpiData,
       },
     };
   }
