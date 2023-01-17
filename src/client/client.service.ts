@@ -196,6 +196,24 @@ export class ClientService {
     if (!client_upi)
       throw new HttpException({ message: 'Client Upi Not Found' }, 404);
 
+    const clientUpis = await global.DB.ClientUpi.findAll({
+      where: {
+        id: { [Op.ne]: client_upi.id },
+        client_id: client_upi.client_id,
+        portal_id: client_upi.portal_id,
+      },
+    });
+
+    const everyUpiIsInactive = clientUpis.every(
+      (item) => item.status === 'INACTIVE',
+    );
+
+    if (everyUpiIsInactive && status === 'INACTIVE')
+      throw new HttpException(
+        { message: 'Can not set all Upis of a Portal to Inactive' },
+        400,
+      );
+
     try {
       await client_upi.update({
         ...(name ? { name } : {}),
