@@ -285,8 +285,6 @@ export class ClientService {
       },
     );
 
-    console.log('FilterFromRoles:', filterFromRoles);
-
     filterObject = { ...filterObject, ...filterFromRoles };
 
     const totalItems = await global.DB.ClientUpi.count({
