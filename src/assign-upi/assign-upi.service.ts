@@ -156,7 +156,7 @@ export class AssignUpiService {
     ).length;
 
     const offset = limit * (page - 1);
-    const totalPages = Math.ceil(totalItems / limit);
+    const totalPages = limit ? Math.ceil(totalItems / limit) : 1;
 
     const userUpi = await global.DB.UserUpi.findAll({
       where: filterObject,
@@ -189,7 +189,7 @@ export class AssignUpiService {
           attributes: ['id', 'first_name', 'last_name', 'email'],
         },
       ],
-      limit,
+      ...(limit ? { limit } : {}),
       offset,
     });
     return {

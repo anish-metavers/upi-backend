@@ -115,7 +115,7 @@ export class TransactionService {
       where: filterObject,
     });
     const offset = limit * (page - 1);
-    const totalPages = Math.ceil(totalItems / limit);
+    const totalPages = limit ? Math.ceil(totalItems / limit) : 1;
 
     const transactions = await global.DB.Transaction.findAll({
       where: filterObject,
@@ -148,7 +148,7 @@ export class TransactionService {
           attributes: ['id', 'name'],
         },
       ],
-      limit,
+      ...(limit ? { limit } : {}),
       offset,
       order: [['created_at', 'DESC']],
     });

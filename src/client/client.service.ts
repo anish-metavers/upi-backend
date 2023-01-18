@@ -35,12 +35,12 @@ export class ClientService {
       where: filterObject,
     });
     const offset = limit * (page - 1);
-    const totalPages = Math.ceil(totalItems / limit);
+    const totalPages = limit ? Math.ceil(totalItems / limit) : 1;
 
     const clients = await global.DB.Client.findAll({
       where: filterObject,
       attributes: ['id', 'name', 'email', 'status'],
-      limit,
+      ...(limit ? { limit } : {}),
       offset,
     });
 
@@ -293,7 +293,7 @@ export class ClientService {
       where: filterObject,
     });
     const offset = limit * (page - 1);
-    const totalPages = Math.ceil(totalItems / limit);
+    const totalPages = limit ? Math.ceil(totalItems / limit) : 1;
 
     const list = await global.DB.ClientUpi.findAll({
       where: filterObject,
@@ -310,7 +310,7 @@ export class ClientService {
           attributes: ['id', 'name'],
         },
       ],
-      limit,
+      ...(limit ? { limit } : {}),
       offset,
     });
     return {

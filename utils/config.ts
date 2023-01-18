@@ -152,6 +152,6 @@ export const ROULETTE_GAME_OPTIONS_NON_DECLARABLE = {
 };
 
 export const PAGINATION = {
-  LIMIT: 10,
+  LIMIT: 0,
   PAGE: 1,
 };

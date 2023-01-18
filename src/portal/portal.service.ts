@@ -74,7 +74,7 @@ export class PortalService {
       where: filterObject,
     });
     const offset = limit * (page - 1);
-    const totalPages = Math.ceil(totalItems / limit);
+    const totalPages = limit ? Math.ceil(totalItems / limit) : 1;
 
     const portals = await global.DB.Portal.findAll({
       where: filterObject,
@@ -91,7 +91,7 @@ export class PortalService {
           attributes: ['id', 'first_name', 'last_name'],
         },
       ],
-      limit,
+      ...(limit ? { limit } : {}),
       offset,
     });
 
