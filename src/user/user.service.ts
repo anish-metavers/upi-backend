@@ -168,7 +168,7 @@ export class UserService {
     ).length;
 
     const offset = limit * (page - 1);
-    const totalPages = Math.ceil(totalItems / limit);
+    const totalPages = limit ? Math.ceil(totalItems / limit) : 1;
 
     const users = await global.DB.User.findAll({
       where: filterObject,
@@ -193,7 +193,7 @@ export class UserService {
         },
       ],
       // logging: true,
-      limit,
+      ...(limit ? { limit } : {}),
       offset,
     });
 

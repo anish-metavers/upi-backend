@@ -32,7 +32,7 @@ export class AssignPortalService {
       })
     ).length;
     const offset = limit * (page - 1);
-    const totalPages = Math.ceil(totalItems / limit);
+    const totalPages = limit ? Math.ceil(totalItems / limit) : 1;
 
     const users = await global.DB.UserPortal.findAll({
       where: filterObj,
@@ -49,7 +49,7 @@ export class AssignPortalService {
           attributes: ['id', 'first_name', 'last_name'],
         },
       ],
-      limit,
+      ...(limit ? { limit } : {}),
       offset,
     });
 
