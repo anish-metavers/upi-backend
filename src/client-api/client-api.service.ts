@@ -57,6 +57,15 @@ export class ClientApiService {
         );
       }
     }
+    const checkClientApis = await global.DB.ClientApi.findAll({
+      where: {
+        client_id: portal.client_id,
+        portal_id,
+      },
+    });
+    if (checkClientApis.length == 2) {
+      await portal.update({ status: 'ACTIVE' });
+    }
     await clientApi.reload();
     return {
       message: 'Client APIs created successfully',
@@ -64,14 +73,28 @@ export class ClientApiService {
       response: { data: clientApi },
     };
   }
+
   async findOne(req: Request, portal_id: number) {
+    const req_client_id = req['client_id'];
+
     const portal = await global.DB.Portal.findOne({ where: { id: portal_id } });
 
     if (!portal) throw new HttpException({ message: 'Portal not found' }, 404);
 
     const clientApis = await global.DB.ClientApi.findAll({
-      where: { portal_id },
+      where: {
+        portal_id,
+        ...(req_client_id ? { client_id: req_client_id } : {}),
+      },
     });
+
+    if (clientApis.length <= 0)
+      throw new HttpException(
+        {
+          message: 'APIs Not Found or You Do not have Access to this Portal!!',
+        },
+        404,
+      );
 
     return {
       message: 'Client APIs fetched successfully',

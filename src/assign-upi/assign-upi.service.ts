@@ -2,6 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { Op } from 'sequelize';
 import { PAGINATION } from 'utils/config';
+import { Misc } from 'utils/misc';
 import { AssignUpiDto, AssignUpiListDto } from './dto/assignUpi.dto';
 
 @Injectable()
@@ -118,8 +119,12 @@ export class AssignUpiService {
   async findAllUserUpi(req: Request, query: AssignUpiListDto) {
     const { client_id, portal_id, client_upi_id, first_name } = query;
     const filterObject: any = {};
-    const innerFilterObject1: any = {};
+    let clientUpiFilterObj: any = {};
     const innerFilterObject2: any = {};
+
+    const req_client_id = req['client_id'];
+    const req_user_id = req['user_id'];
+    const user_role_name = req['role_name'];
 
     let { limit, page } = query;
 
@@ -127,10 +132,20 @@ export class AssignUpiService {
     page = Number(page) || PAGINATION.PAGE;
 
     if (client_upi_id) filterObject.client_upi_id = client_upi_id;
-    if (client_id) innerFilterObject1.client_id = client_id;
-    if (portal_id) innerFilterObject1.portal_id = portal_id;
     if (first_name)
       innerFilterObject2.first_name = { [Op.like]: `%${first_name}%` };
+
+    const filterFromRole = await Misc.createFilterFromRoles(
+      user_role_name,
+      req_client_id,
+      req_user_id,
+      {
+        client_id,
+        portal_id,
+      },
+    );
+
+    clientUpiFilterObj = { ...clientUpiFilterObj, ...filterFromRole };
 
     const totalItems = (
       await global.DB.UserUpi.findAll({
@@ -140,7 +155,7 @@ export class AssignUpiService {
           {
             model: global.DB.ClientUpi,
             as: 'client_upi_data',
-            where: innerFilterObject1,
+            where: clientUpiFilterObj,
             attributes: ['id'],
             required: true,
           },
@@ -165,7 +180,7 @@ export class AssignUpiService {
         {
           model: global.DB.ClientUpi,
           as: 'client_upi_data',
-          where: innerFilterObject1,
+          where: clientUpiFilterObj,
           required: true,
           attributes: ['id', 'upi', 'client_id', 'portal_id', 'status'],
           include: [
