@@ -31,6 +31,7 @@ export class AssignPortalService {
         ],
       })
     ).length;
+
     const offset = limit * (page - 1);
     const totalPages = limit ? Math.ceil(totalItems / limit) : 1;
 
@@ -63,12 +64,19 @@ export class AssignPortalService {
   async assignPortal(req: Request, user_id: string, body: AssignPortalDto) {
     const { portal_ids } = body;
 
+    const req_client_id = req['client_id'];
+    // const req_user_id = req['user_id'];
+    // const user_role_name = req['role_name'];
+
     const [portals, user] = await Promise.all([
       global.DB.Portal.findAll({
         where: { id: { [Op.in]: portal_ids } },
       }),
       global.DB.User.findOne({
-        where: { id: user_id },
+        where: {
+          id: user_id,
+          ...(req_client_id ? { client_id: req_client_id } : {}),
+        },
         attributes: { exclude: ['createdAt', 'updatedAt', 'password'] },
         include: {
           model: global.DB.UserRole,
@@ -89,7 +97,10 @@ export class AssignPortalService {
 
     if (!user)
       throw new HttpException(
-        { message: 'User not found with this UserId!' },
+        {
+          message:
+            'User not found with this UserId or This User does not belongs to Your Client!',
+        },
         404,
       );
     if (user.user_role_data[0].role_data.name != 'Portal Manager')

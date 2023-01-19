@@ -11,11 +11,12 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthGuard } from 'guard/auth.guard';
+import { PermissionGuard } from 'guard/permission.guard';
 import { AssignPortalService } from './assign-portal.service';
 import { AssignPortalDto, UserPortalQueryDto } from './dto/assignPortal.dto';
 
 @Controller('assign-portal')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PermissionGuard)
 export class AssignPortalController {
   constructor(private readonly assignPortalService: AssignPortalService) {}
 

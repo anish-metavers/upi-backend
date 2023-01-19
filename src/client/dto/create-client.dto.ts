@@ -4,8 +4,9 @@ export class CreateClientUpiDto {
   @IsNotEmpty()
   name: string;
 
-  @Length(6, 20)
-  @Matches(/@/, { message: 'Not a Valid UPI!' })
+  @Matches(/^[A-Za-z0-9]{2,20}@{1}[a-zA-Z]{2,}/, {
+    message: 'Not a Valid UPI! ~',
+  })
   @IsNotEmpty()
   upi: string;
 

@@ -1,23 +1,37 @@
 import { Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { col, fn, Op } from 'sequelize';
+import { Misc } from 'utils/misc';
 import { ClientWiseTrxnStatQuery } from './dto/query.dto';
 
 @Injectable()
 export class DashboardService {
   async getClientWiseTrxnStats(req: Request, query: ClientWiseTrxnStatQuery) {
-    const {
+    let {
       client_id,
       portal_id,
       client_upi_id,
       created_at_from,
       created_at_to,
     } = query;
-    const filterObject: any = {};
+
+    let filterObject: any = {};
+
+    const req_client_id = req['client_id'];
+    const req_user_id = req['user_id'];
+    const user_role_name = req['role_name'];
+
+    const filterFromRole = await Misc.createFilterFromRoles(
+      user_role_name,
+      req_client_id,
+      req_user_id,
+      { client_id, portal_id },
+    );
+    if (filterFromRole.client_id) client_id = filterFromRole.client_id;
+    if (filterFromRole.portal_id) portal_id = 'Some Thing';
+    filterObject = { ...filterObject, ...filterFromRole };
 
     // Add to Filter Object if available
-    if (client_id) filterObject.client_id = client_id;
-    if (portal_id) filterObject.portal_id = portal_id;
     if (client_upi_id) filterObject.client_upi_id = client_upi_id;
     if (created_at_from && created_at_to)
       filterObject.created_at = {

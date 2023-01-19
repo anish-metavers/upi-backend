@@ -17,7 +17,7 @@ import { Request } from 'express';
 import { AssignUpiDto, AssignUpiListDto } from './dto/assignUpi.dto';
 
 @Controller('assign-upi')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PermissionGuard)
 export class AssignUpiController {
   constructor(private readonly assignUpiService: AssignUpiService) {}
 

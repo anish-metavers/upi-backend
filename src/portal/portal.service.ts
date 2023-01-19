@@ -30,6 +30,7 @@ export class PortalService {
         domain,
         client_id,
         redirect_url,
+        status: 'INACTIVE',
         created_by: req['user_id'],
       });
     } catch (error) {
@@ -105,16 +106,10 @@ export class PortalService {
   async findOne(req: Request, portal_id: number, query: PortalFindDto) {
     const client_id = req['client_id'] || query.client_id;
 
-    // if (!client_id)
-    //   throw new HttpException(
-    //     { message: 'Client Id is required for Master Admin!!' },
-    //     401,
-    //   );
-
     const portal = await global.DB.Portal.findOne({
       where: {
-        ...(client_id ? { client_id } : {}),
         id: portal_id,
+        ...(client_id ? { client_id } : {}),
       },
       attributes: { exclude: ['createdAt', 'updatedAt'] },
       include: [
@@ -154,12 +149,19 @@ export class PortalService {
     const { name, domain, redirect_url, status } = updatePortalDto;
     const client_id = req['client_id'] || updatePortalDto.client_id;
 
-    const portal = await global.DB.Portal.findOne({
-      where: {
-        ...(client_id ? { client_id } : {}),
-        id: portal_id,
-      },
-    });
+    const [portal, clientApis] = await Promise.all([
+      global.DB.Portal.findOne({
+        where: {
+          ...(client_id ? { client_id } : {}),
+          id: portal_id,
+        },
+      }),
+      global.DB.ClientApi.findAll({
+        where: {
+          portal_id,
+        },
+      }),
+    ]);
 
     if (!portal)
       throw new HttpException(
@@ -168,6 +170,15 @@ export class PortalService {
         },
         401,
       );
+
+    if (status == 'ACTIVE' && clientApis.length != 2) {
+      throw new HttpException(
+        {
+          message: 'First Add APIs to Update Status to ACTIVE!!',
+        },
+        401,
+      );
+    }
 
     try {
       await portal.update({
@@ -184,7 +195,7 @@ export class PortalService {
       else
         throw new HttpException({ message: 'Error in Updating Portal!!' }, 400);
     }
-
+    await portal.reload();
     return {
       success: true,
       message: 'Portal updated successfully',

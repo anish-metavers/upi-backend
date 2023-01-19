@@ -126,6 +126,7 @@ export class TransactionService {
         'order_id',
         'amount',
         'client_upi',
+        'image_url',
         'client_upi_name',
         'user_upi',
         'note',
@@ -152,7 +153,6 @@ export class TransactionService {
       offset,
       order: [['created_at', 'DESC']],
     });
-    // if (!transactions) throw new HttpException('Invalid client id', 400);
 
     return {
       success: true,
