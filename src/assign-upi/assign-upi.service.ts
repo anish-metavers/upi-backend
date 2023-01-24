@@ -52,7 +52,7 @@ export class AssignUpiService {
     }
 
     // Check if User is Transaction Manager
-    let isUserTrxnManager =
+    const isUserTrxnManager =
       user.user_role_data.filter(
         (item: any) => item.role_data.name == 'Transaction Manager',
       ).length > 0;
@@ -72,8 +72,8 @@ export class AssignUpiService {
     });
 
     // Filter Already Existing Upis
-    let exist_upi = userUpis;
-    let upisToAdd = [...upis];
+    const exist_upi = userUpis;
+    const upisToAdd = [...upis];
     for (let i = 0; i < exist_upi.length; i++) {
       for (let j = 0; j < upis.length; j++) {
         if (exist_upi[i].client_upi_id == upis[j]) {

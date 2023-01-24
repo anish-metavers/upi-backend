@@ -8,14 +8,14 @@ export async function GameServiceAPICall(
   headers: any,
 ) {
   const { body, query } = apiReq;
-  let headersList = { 'Content-Type': 'application/json', ...headers };
+  const headersList = { 'Content-Type': 'application/json', ...headers };
 
-  let bodyContent = JSON.stringify({
+  const bodyContent = JSON.stringify({
     ...body,
   });
 
-  let queryStringUrl = query ? new URLSearchParams(query).toString() : null;
-  let reqOptions = {
+  const queryStringUrl = query ? new URLSearchParams(query).toString() : null;
+  const reqOptions = {
     url: `${endpoint}${url}${queryStringUrl ? `?${queryStringUrl}` : ''}`,
     method,
     headers: headersList,
