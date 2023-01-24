@@ -269,11 +269,11 @@ export class TransactionService {
 
     if (!transaction) throw new HttpException('Transaction Not Found', 404);
 
-    if (transaction.is_user_upi)
-      throw new HttpException(
-        { message: 'User Upi is Already Submitted!!' },
-        400,
-      );
+    // if (transaction.is_user_upi)
+    //   throw new HttpException(
+    //     { message: 'User Upi is Already Submitted!!' },
+    //     400,
+    //   );
 
     if (transaction.status != 'OPEN')
       throw new HttpException('This Transaction is already Submitted!!', 400);
