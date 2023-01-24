@@ -52,7 +52,7 @@ export class TransactionService {
     //   where: { user_id },
     // });
 
-    let filterObject: any = {};
+    const filterObject: any = {};
     console.log('user_role_name:', user_role_name);
 
     if (user_role_name === 'Admin') filterObject.client_id = client_id;
@@ -174,7 +174,7 @@ export class TransactionService {
     const portal = await global.DB.Portal.findOne({ where: { id: portal_id } });
     if (!portal) throw new HttpException({ message: 'Portal not found' }, 404);
 
-    const data = await global.DB.Transaction.findOne({
+    let TrxnData = await global.DB.Transaction.findOne({
       attributes: [
         'id',
         'amount',
@@ -192,7 +192,7 @@ export class TransactionService {
       where: { order_id, portal_id },
     });
 
-    if (!data) {
+    if (!TrxnData) {
       const [ApiRes, clientUpi] = await Promise.all([
         this.thirdPartyService.callApiForClient({
           apiReq: { query: { order_id } },
@@ -240,7 +240,7 @@ export class TransactionService {
         status: data.status,
       });
 
-      return await global.DB.Transaction.findOne({
+      TrxnData = await global.DB.Transaction.findOne({
         attributes: [
           'id',
           'amount',
@@ -259,7 +259,9 @@ export class TransactionService {
       });
     }
 
-    return data;
+    return {
+      data: { ...TrxnData.toJSON(), redirect_url: portal.redirect_url },
+    };
   }
 
   async updateUserUpi(id: number, updateUpiDto: UpdateUpiDto) {
