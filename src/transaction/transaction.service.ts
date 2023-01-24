@@ -259,9 +259,7 @@ export class TransactionService {
       });
     }
 
-    return {
-      data: { ...TrxnData.toJSON(), redirect_url: portal.redirect_url },
-    };
+    return { ...TrxnData.toJSON(), redirect_url: portal.redirect_url };
   }
 
   async updateUserUpi(id: number, updateUpiDto: UpdateUpiDto) {
