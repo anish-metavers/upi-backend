@@ -26,6 +26,11 @@ const model = (sequelize: Sequelize) => {
         autoIncrement: true,
         allowNull: false,
       },
+      encrypted_key: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null,
+      },
       client_id: {
         type: DataTypes.INTEGER,
         allowNull: false,

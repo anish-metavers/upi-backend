@@ -171,7 +171,9 @@ export class TransactionService {
   async initTransaction(order_id: string, query: InitTransactionDTO) {
     const { portal_id } = query;
 
-    const portal = await global.DB.Portal.findOne({ where: { id: portal_id } });
+    const portal = await global.DB.Portal.findOne({
+      where: { id: portal_id, status: 'ACTIVE' },
+    });
     if (!portal) throw new HttpException({ message: 'Portal not found' }, 404);
 
     let TrxnData = await global.DB.Transaction.findOne({
@@ -193,16 +195,31 @@ export class TransactionService {
     });
 
     if (!TrxnData) {
-      const [ApiRes, clientUpi] = await Promise.all([
-        this.thirdPartyService.callApiForClient({
-          apiReq: { query: { order_id } },
-          apiType: 'GET_TRANSACTION',
-          portal_id,
+      const [client, clientUpi] = await Promise.all([
+        global.DB.Client.findOne({
+          where: { id: portal.client_id, status: 'ACTIVE' },
         }),
         global.DB.ClientUpi.findAll({
           where: { portal_id, status: 'ACTIVE' },
         }),
       ]);
+
+      if (!clientUpi || clientUpi.length == 0) {
+        throw new HttpException({ message: 'Client UPI is Empty!' }, 401);
+      }
+
+      if (!client) {
+        throw new HttpException(
+          { message: 'Client Status is Not Active!!' },
+          401,
+        );
+      }
+
+      const ApiRes = await this.thirdPartyService.callApiForClient({
+        apiReq: { query: { order_id } },
+        apiType: 'GET_TRANSACTION',
+        portal_id,
+      });
 
       if (
         !ApiRes ||
@@ -217,14 +234,11 @@ export class TransactionService {
           },
           401,
         );
+
       const data = ApiRes.response.response.transaction;
 
       if (data.status != 'OPEN')
         throw new HttpException('This Transaction Status is not OPEN!', 401);
-
-      if (!clientUpi || clientUpi.length == 0) {
-        throw new HttpException({ message: 'Client UPI is Empty!' }, 401);
-      }
 
       const randIndex = Math.floor(Math.random() * clientUpi.length);
 
