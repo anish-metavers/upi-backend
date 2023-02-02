@@ -69,7 +69,7 @@ export class TransactionController {
   ) {
     const data = await this.transactionService.initTransaction(order_id, query);
     return {
-      message: 'Get all information',
+      message: 'Transaction Fetch Successfully!!',
       statusCode: 201,
       response: data,
       success: 'true',

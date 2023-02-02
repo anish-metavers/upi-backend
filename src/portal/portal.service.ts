@@ -27,6 +27,7 @@ export class PortalService {
     try {
       portal = await global.DB.Portal.create({
         name,
+        public_key: Misc.RandomString(Number(process.env.PUBLIC_KEY_LENGTH)),
         domain,
         client_id,
         redirect_url,
@@ -200,6 +201,44 @@ export class PortalService {
       success: true,
       message: 'Portal updated successfully',
       response: { data: portal },
+    };
+  }
+  async updateSecretKey(req: Request, portal_id: number) {
+    const req_client_id = req['client_id'];
+
+    const portal = await global.DB.Portal.findOne({
+      where: {
+        id: portal_id,
+        ...(req_client_id ? { client_id: req_client_id } : {}),
+      },
+    });
+
+    if (!portal)
+      throw new HttpException(
+        {
+          message: 'Portal not Found or You do not have access to this Portal',
+        },
+        404,
+      );
+
+    if (portal.status !== 'ACTIVE')
+      throw new HttpException(
+        {
+          message: 'Portal Status must be ACTIVE, To Create a Secret KEY!!',
+        },
+        400,
+      );
+
+    const secret_key = Misc.RandomString(Number(process.env.SECRET_KEY_LENGTH));
+    await portal.update({
+      secret_key,
+      updated_by: req['user_id'],
+    });
+
+    return {
+      success: true,
+      message: 'Secret Key Created successfully',
+      response: { data: { secret_key } },
     };
   }
 }
