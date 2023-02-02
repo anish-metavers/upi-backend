@@ -26,6 +26,15 @@ const model = (sequelize: Sequelize) => {
         autoIncrement: true,
         allowNull: false,
       },
+      public_key: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      secret_key: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null,
+      },
       client_id: {
         type: DataTypes.INTEGER,
         allowNull: false,

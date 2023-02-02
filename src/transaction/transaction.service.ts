@@ -169,9 +169,11 @@ export class TransactionService {
   }
 
   async initTransaction(order_id: string, query: InitTransactionDTO) {
-    const { portal_id } = query;
+    const { portal_id: portal_public_key } = query;
 
-    const portal = await global.DB.Portal.findOne({ where: { id: portal_id } });
+    const portal = await global.DB.Portal.findOne({
+      where: { public_key: portal_public_key, status: 'ACTIVE' },
+    });
     if (!portal) throw new HttpException({ message: 'Portal not found' }, 404);
 
     let TrxnData = await global.DB.Transaction.findOne({
@@ -189,20 +191,35 @@ export class TransactionService {
         'end_at',
         'note',
       ],
-      where: { order_id, portal_id },
+      where: { order_id, portal_id: portal.id },
     });
 
     if (!TrxnData) {
-      const [ApiRes, clientUpi] = await Promise.all([
-        this.thirdPartyService.callApiForClient({
-          apiReq: { query: { order_id } },
-          apiType: 'GET_TRANSACTION',
-          portal_id,
+      const [client, clientUpi] = await Promise.all([
+        global.DB.Client.findOne({
+          where: { id: portal.client_id, status: 'ACTIVE' },
         }),
         global.DB.ClientUpi.findAll({
-          where: { portal_id, status: 'ACTIVE' },
+          where: { portal_id: portal.id, status: 'ACTIVE' },
         }),
       ]);
+
+      if (!clientUpi || clientUpi.length == 0) {
+        throw new HttpException({ message: 'Client UPI is Empty!' }, 401);
+      }
+
+      if (!client) {
+        throw new HttpException(
+          { message: 'Client Status is Not Active!!' },
+          401,
+        );
+      }
+
+      const ApiRes = await this.thirdPartyService.callApiForClient({
+        apiReq: { query: { order_id } },
+        apiType: 'GET_TRANSACTION',
+        portal_id: portal.id,
+      });
 
       if (
         !ApiRes ||
@@ -217,23 +234,23 @@ export class TransactionService {
           },
           401,
         );
+
       const data = ApiRes.response.response.transaction;
 
       if (data.status != 'OPEN')
         throw new HttpException('This Transaction Status is not OPEN!', 401);
 
-      if (!clientUpi || clientUpi.length == 0) {
-        throw new HttpException({ message: 'Client UPI is Empty!' }, 401);
-      }
-
       const randIndex = Math.floor(Math.random() * clientUpi.length);
+
+      const end_at = new Date(new Date().getTime() + 20 * 60000);
 
       await global.DB.Transaction.create({
         client_upi_name: clientUpi[randIndex].name,
         client_upi: clientUpi[randIndex].upi,
         client_upi_id: clientUpi[randIndex].id,
         client_id: portal.client_id,
-        portal_id,
+        portal_id: portal.id,
+        end_at,
         order_id,
         amount: data.amount,
         note: data.note,
@@ -255,7 +272,7 @@ export class TransactionService {
           'end_at',
           'note',
         ],
-        where: { order_id, portal_id },
+        where: { order_id, portal_id: portal.id },
       });
     }
 
@@ -278,11 +295,8 @@ export class TransactionService {
     if (transaction.status != 'OPEN')
       throw new HttpException('This Transaction is already Submitted!!', 400);
 
-    const end_at = new Date(new Date().getTime() + 30 * 60000);
-
     await transaction.update({
       user_upi,
-      end_at,
       is_user_upi: true,
     });
     await transaction.reload();

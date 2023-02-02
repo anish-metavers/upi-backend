@@ -109,14 +109,14 @@ export class AssignPortalService {
         401,
       );
 
-    let userPortal = null;
-    let trxn = await global.DB.sequelize.transaction();
+    // let userPortal = null;
+    const trxn = await global.DB.sequelize.transaction();
 
-    let dataArr = portal_ids.map((id) => {
+    const dataArr = portal_ids.map((id) => {
       return { user_id, portal_id: id, created_by: req['user_id'] };
     });
     try {
-      userPortal = await global.DB.UserPortal.bulkCreate(dataArr, {
+      await global.DB.UserPortal.bulkCreate(dataArr, {
         transaction: trxn,
       });
     } catch (error) {

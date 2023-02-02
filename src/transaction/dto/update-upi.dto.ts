@@ -3,7 +3,7 @@ import { CreateUpiDto } from './create-upi.dto';
 import { Length, IsNotEmpty, Matches } from 'class-validator';
 
 export class UpdateUpiDto extends PartialType(CreateUpiDto) {
-  @Matches(/^[A-Za-z0-9]{2,20}@{1}[a-zA-Z]{2,}/, {
+  @Matches(/^[A-Za-z0-9-.]{2,20}@{1}[a-zA-Z]{2,}/, {
     message: 'Not a Valid UPI! ~',
   })
   @IsNotEmpty()

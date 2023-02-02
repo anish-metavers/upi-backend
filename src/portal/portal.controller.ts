@@ -49,4 +49,12 @@ export class PortalController {
   ) {
     return this.portalService.update(req, +portal_id, updatePortalDto);
   }
+
+  @Patch('/secret-key/:portal_id')
+  async updateSecretKey(
+    @Req() req: Request,
+    @Param('portal_id') portal_id: string,
+  ) {
+    return await this.portalService.updateSecretKey(req, +portal_id);
+  }
 }
